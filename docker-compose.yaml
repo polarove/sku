@@ -1,0 +1,10 @@
+services:
+  sku-picker:
+    container_name: sku-picker
+    restart: always
+    image: sku-picker
+    ports:
+      - 3004:3000
+    build:
+      context: ./
+      dockerfile: Dockerfile
