@@ -4,7 +4,7 @@ services:
     restart: always
     image: sku-picker
     ports:
-      - 3004:3000
+      - 3003:3000
     build:
       context: ./
       dockerfile: Dockerfile
