@@ -3,7 +3,7 @@
 		<section v-if="visible" class="absolute top-50% left-50% transform"
 			style="--un-translate-x: -50%; --un-translate-y: -50%">
 			<h1>Sku 选择器</h1>
-			<p>😎特性：理论上仅需<strong>一张表</strong>即可支持无限层 SKU 互相嵌套与条件筛选</p>
+			<p>😎特性：理论上仅需<strong>一张表</strong>即可支持多个商品不同 SKU 的按给定条件互相嵌套与条件筛选</p>
 			<p>😥缺陷：维护相对麻烦，在一张表内使用 id 作为关联上下级的关键字段</p>
 			<p>🤗如何优化：将标题和 SKU 分别放在两张表里，也就是取舍的问题</p>
 			<div class="bg-#222222 px-8 py-4 rounded">
