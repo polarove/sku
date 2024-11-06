@@ -7,13 +7,13 @@
 			<p>😥缺陷：维护相对麻烦，在一张表内使用 id 作为关联上下级的关键字段</p>
 			<p>🤗如何优化：将标题和 SKU 分别放在两张表里，也就是取舍的问题</p>
 			<div class="bg-#222222 px-8 py-4 rounded">
-				<div v-for="spec, index in specs" class="my-4">
-					<div class="font-bold mb-2 text-2xl">{{ spec.name }}</div>
+				<div v-for="spec, index in specs" class="my-12">
+					<div class="font-bold mb-4 text-2xl">{{ spec.name }}</div>
 					<div 
 						v-for="sku of calculateSku(spec.id)" 
 						:key="sku.id" 
-						class="inline-block mx-4 cursor-pointer text-xl"
-						:class="[selections.includes(sku.id) ? 'color-blue' : '', selections.length < index ? 'color-gray cursor-not-allowed' : 'hover:color-blue']"
+						class="inline-block mr-4 cursor-pointer text-xl"
+						:class="[selections.includes(sku.id) ? 'color-blue' : '', selections.length < index ? 'color-gray-500 cursor-not-allowed' : 'hover:color-blue']"
 						@click="() => handleSelect(sku.id, index)">
 							{{ sku.name }}
 					</div>
