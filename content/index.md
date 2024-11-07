@@ -4,12 +4,9 @@
 /// <summary>
 ///  商品Sku表，存放了每个商品的 Sku 信息，多层级 SKU 信息，比如：颜色、尺码等 和单层级 SKU 信息
 /// </summary>
-public class ShopGoodSku {
-
-    public int Id { get; set; }
-
-    public int GoodsId { get; set; }
-
+public class ShopGoodSku : BaseShopGoods 
+{
+    
     public string Name { get; set; }
 
     /// <summary>
