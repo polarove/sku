@@ -17,7 +17,7 @@ export default defineNuxtConfig({
 	},
 	mdc: {
 		highlight: {
-			langs: ['c#', 'typescript']
+			langs: ['c#']
 		}
 	}
 })
