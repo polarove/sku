@@ -1,7 +1,7 @@
 <template>
     <section>
         <h1>单层级 Sku 选择器</h1>
-        <p>😎特性：理论上仅需<strong>一张表</strong>即可支持多个商品不同 SKU 的按给定条件互相嵌套与条件筛选</p>
+        <p>😎特性：理论上仅需<strong>一张表</strong>即可支持多个商品 单层Sku 的列表展示</p>
         <p>😎特性：数据完全由后端控制</p>
         <p>😥缺陷：将 Sku 的可能的排列全部放在一张表里，单表数据量将会十分庞大</p>
         <div class="bg-#222222 px-8 py-2 rounded">
