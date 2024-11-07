@@ -1,14 +1,13 @@
 <template>
     <section>
         <h1>动态多层 Sku 选择器</h1>
-        <p>😎特性：理论上仅需<strong>一张表</strong>即可支持多个商品不同 SKU 的按给定条件互相嵌套与条件筛选</p>
-        <p>😥缺陷：在一张表内使用 id 作为关联上下级的关键字段，在后台管理系统中的错误操作可能会导致多个商品的 sku 关系崩溃</p>
+        <p>🧐相似场景：奶茶加料</p>
         <p>😥缺陷：不能信任 Javascript 的数字计算能力，价格应当通过请求发到后端进行计算</p>
         <div class="bg-#222222 px-8 py-2 rounded">
             <div v-for="spec, index in specs" class="my-8">
                 <div class="mb-4 flex justify-between items-center w100%">
                     <span class="text-2xl font-bold">{{ spec.name }}</span>
-                    <span>{{ prices[index] ? `￥${prices[index]}` : '等待选择' }}</span>
+                    <span>{{ prices[index] === undefined ? '等待选择' : `￥${prices[index]}` }}</span>
                 </div>
                 <div v-for="sku of calculateSku(spec.id)" :key="sku.id" class="inline-block mr-4 cursor-pointer text-xl"
                     :class="[selections.includes(sku.id) ? 'color-blue' : '', selections.length < index ? 'color-gray-500 cursor-not-allowed' : 'hover:color-blue']"
