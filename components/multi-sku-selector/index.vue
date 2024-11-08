@@ -38,8 +38,8 @@ const selections = reactive<number[]>([])
 const isFullySelected = (item: ISKU, selections: number[], specs: ISpec[]) => { return selections.length === item.parentIds.length && selections.length === specs.length && item.parentIds.every((id, index) => selections[index] === id) }
 const product = computed(() => { return props.skus.find(sku => isFullySelected(sku, selections, props.specs)); })
 
-const validate = (product: ISKU) => {
-    return product.stock < (product.threshold ?? 0)
+const validate = (product: (ISKU | undefined)[]) => {
+    if(product) return product.every((c) => c!.disabled = c!.stock <= (c!.threshold ?? 0))
 }
 
 /**
@@ -76,9 +76,10 @@ const handleSelection = (depth: number, offset: number) => {
         return Promise.resolve(products)
     }
 
-    const groupedByNext: { next: number, products: ISKU[] }[] = [];
+
 
     const assembleSets = (products: ISKU[]) => {
+        const groupedByNext: { next: number, products: ISKU[] }[] = [];
         products
             .map(tag => ({ product: tag, next: tag.parentIds[selections.length] ?? tag.id }))
             .forEach(item => {
@@ -88,13 +89,11 @@ const handleSelection = (depth: number, offset: number) => {
                     groupedByNext.push({ next: item.next, products: [item.product] });
                 }
             })
+        return groupedByNext
     }
 
     const indentify = (groups: { next: number, products: ISKU[] }[]) => {
-        groups.forEach((g) => {
-            const option = props.skus.find(sku => sku.id === g.next)
-            if (option) option.disabled = g.products.every(validate);
-        })
+        return groups.map((g) => props.skus.find(sku => sku.id === g.next))
     }
 
 
@@ -102,6 +101,8 @@ const handleSelection = (depth: number, offset: number) => {
     select()
         .then(() => findRelatedProducts(props.specs.length))
         .then(assembleSets)
+        .then(indentify)
+        .then(validate)
         .catch().finally()
 
 }
