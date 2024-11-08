@@ -11,19 +11,19 @@
                 <div v-for="tag in skus.filter(e => e.specId === spec.id)"
                     class="inline-block mr-4 text-xl cursor-pointer" @click="handleSelection(depth, skus.indexOf(tag))"
                     :class="[selections.includes(tag.id) ? tag.disabled ? 'color-red' : 'color-blue' : '', tag.disabled === true ? 'color-gray' : '', selections.length < depth ? 'color-gray cursor-not-allowed' : '']">
-                    {{ tag.disabled }}{{ tag.labels.join(', ') }}
+                    {{ tag.labels.join(', ') }}
                 </div>
             </div>
             <div class="h-1" style="border-top: 1px solid gray;"></div>
             <div class="my-4 text-2xl flex justify-between items-center">
                 <span>产品</span>
-                <span :class="[product == null ? 'color-gray' : product.disabled ? 'color-red' : 'color-blue']">{{
-                    product?.labels.join(' - ') ?? '等待选择' }}</span>
+                <span :class="[product == null ? 'color-gray' : product.disabled ? 'color-red' : 'color-blue']">
+                    {{ product?.labels.join(' - ') ?? '等待选择' }}</span>
             </div>
             <div class="my-4 text-2xl flex justify-between items-center">
                 <span>最终价格</span>
-                <span :class="[product == null ? 'color-gray' : product.disabled ? 'color-red' : 'color-blue']">{{
-                    product ? `￥${product.price}` : '等待选择' }}</span>
+                <span :class="[product == null ? 'color-gray' : product.disabled ? 'color-red' : 'color-blue']">
+                    {{ product ? `￥${product.price}` : '等待选择' }}</span>
             </div>
         </div>
     </section>
@@ -31,6 +31,8 @@
 
 <script lang='ts' setup>
 import { type ISpec, type ISKU, type ITag } from './types'
+
+interface GroupedByNext { next: number; products: ISKU[]; }
 
 const props = defineProps<{ specs: ISpec[], skus: ISKU[] }>()
 
@@ -54,40 +56,64 @@ const validate = (tag: ISKU) => {
  * @param depth 层数
  * @param offset 偏移量
  */
-const handleSelection = (depth: number, offset: number) => {
+const handleSelection = async (
+    depth: number,
+    offset: number,
+): Promise<void> => {
+    const option = props.skus[offset];
+    if (depth > selections.length) {
+        return console.error("请按顺序选择");
+    }
 
-    const option = props.skus[offset]
-    if (depth > selections.length) return Promise.reject("请按顺序选择")
+    select(depth, option.id, selections)
 
-    // 更新 selections
+    const groupedByNext = groupProductsByNext(getFilteredProducts(props.specs.length))
+
+    await Promise.all(
+        groupedByNext.map(async (group: GroupedByNext) => {
+            group.products.every((tag) => tag.disabled = validate(tag))
+            const option = props.skus.find((sku) => sku.id === group.next)
+            if (option) {
+                option.disabled = group.products.every((tag) => validate(tag))
+            }
+        })
+    )
+}
+
+
+const select = (depth: number, id: number, selections: number[]): void => {
     if (depth <= selections.length) {
         selections.splice(depth);
     }
-    selections.splice(depth, 0, option.id);
+    selections.splice(depth, 0, id);
+};
 
-    const products = length === 1
-        ? props.skus.filter(tag => tag.specId === props.specs[0].id)
+
+const getFilteredProducts = (
+    length: number
+): ISKU[] => {
+    return length === 1
+        ? props.skus.filter((tag) => tag.specId === props.specs[0].id)
         : props.skus
-            .filter(tag => tag.specId === null)
-            .filter(tag => tag.parentIds.slice(0, selections.length).every((id, index) => selections[index] === id))
+            .filter((tag) => tag.specId === null)
+            .filter((tag) =>
+                tag.parentIds.slice(0, selections.length).every((id, index) => selections[index] === id)
+            )
+}
 
-
-    const groupedByNext: { next: number, products: ISKU[] }[] = [];
-    products
-        .map(tag => ({ product: tag, next: tag.parentIds[selections.length] ?? tag.id }))
-        .forEach(item => {
-            const group = groupedByNext.find(g => g.next === item.next);
-            if (group) { group.products.push(item.product); }
-            else groupedByNext.push({ next: item.next, products: [item.product] });
-        })
-    groupedByNext.forEach((g) => {
-        const option = props.skus.find(sku => sku.id === g.next)
-        if (option) {
-            option.disabled = g.products.every((tag) => validate(tag));
+const groupProductsByNext = (products: ISKU[]): GroupedByNext[] => {
+    return products.map(tag => ({
+        product: tag,
+        next: tag.parentIds[selections.length] ?? tag.id
+    })).reduce((groups, item) => {
+        const group = groups.find(g => g.next === item.next)
+        if (group) {
+            group.products.push(item.product)
+        } else {
+            groups.push({ next: item.next, products: [item.product] })
         }
-    })
-
-
+        return groups;
+    }, [] as GroupedByNext[])
 }
 
 // 初始调用

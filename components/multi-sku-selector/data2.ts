@@ -79,7 +79,7 @@ export const tags2: ISKU[] = [
         parentIds: [1, 4],
         price: 2002,
         originalPrice: 220,
-        stock: 0,
+        stock: 10,
         threshold: 5,
         sales: 20,
         weight: 10.00,

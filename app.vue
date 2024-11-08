@@ -2,7 +2,7 @@
 	<div>
 		<div>
 			<transition name="down">
-				<section class="text-center mt-24" v-if="visible">
+				<section v-if="visible" class="text-center mt-24">
 					<p>✨支持情况：依赖vue，若小程序如果使用 uniapp 开发，可以完美复现，直接ctrl c+v；若使用原生微信小程序，则需要花费一定时间做适配</p>
 					<p>✨特性：一张表，存储每个商品的Sku，同时支持不同商品的 多层sku嵌套与筛选 和 单sku 列表展示</p>
 					<br>
@@ -14,7 +14,7 @@
 					<dynamic-sku-selector v-if="visible" class="w-30vw px-12" />
 				</transition>
 				<transition name="center">
-					<div class="w-30vw px-12" v-if="visible">
+					<div v-if="visible" class="w-30vw px-12">
 						<multi-sku-selector :skus="tags" :specs="specs" />
 						<multi-sku-selector :skus="tags2" :specs="specs2" />
 						<multi-sku-selector :skus="tags3" :specs="specs3" />
