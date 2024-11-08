@@ -56,53 +56,37 @@ const validate = (tag: ISKU) => {
  */
 const handleSelection = (depth: number, offset: number) => {
 
-    const select = () => {
-        const option = props.skus[offset]
-        if (depth > selections.length) return Promise.reject("请按顺序选择")
-        console.log(2);
-        
-        // 更新 selections
-        if (depth <= selections.length) {
-            selections.splice(depth);
-        }
-        selections.splice(depth, 0, option.id);
-        return Promise.resolve(props.specs.length)
+    const option = props.skus[offset]
+    if (depth > selections.length) return Promise.reject("请按顺序选择")
+
+    // 更新 selections
+    if (depth <= selections.length) {
+        selections.splice(depth);
     }
+    selections.splice(depth, 0, option.id);
 
-    const findProducts = (length: number) => {
-        const products = length === 1
-            ? props.skus.filter(tag => tag.specId === props.specs[0].id)
-            : props.skus
-                .filter(tag => tag.specId === null)
-                .filter(tag => tag.parentIds.slice(0, selections.length).every((id, index) => selections[index] === id))
-        return Promise.resolve(products)
-    }
+    const products = length === 1
+        ? props.skus.filter(tag => tag.specId === props.specs[0].id)
+        : props.skus
+            .filter(tag => tag.specId === null)
+            .filter(tag => tag.parentIds.slice(0, selections.length).every((id, index) => selections[index] === id))
 
 
-
-    const assemble = (products: ISKU[]) => {
-        const groupedByNext: { next: number, products: ISKU[] }[] = [];
-        products
-            .map(tag => ({ product: tag, next: tag.parentIds[selections.length] ?? tag.id }))
-            .forEach(item => {
-                const group = groupedByNext.find(g => g.next === item.next);
-                if (group) { group.products.push(item.product); }
-                else groupedByNext.push({ next: item.next, products: [item.product] });
-            })
-        return Promise.resolve(groupedByNext)
-
-    }
-    const identify = (group: { next: number, products: ISKU[] }[]) => {
-        group.forEach((g) => {
-            const option = props.skus.find(sku => sku.id === g.next)
-            if (option) {
-                option.disabled = g.products.every((tag) => validate(tag));
-            }
+    const groupedByNext: { next: number, products: ISKU[] }[] = [];
+    products
+        .map(tag => ({ product: tag, next: tag.parentIds[selections.length] ?? tag.id }))
+        .forEach(item => {
+            const group = groupedByNext.find(g => g.next === item.next);
+            if (group) { group.products.push(item.product); }
+            else groupedByNext.push({ next: item.next, products: [item.product] });
         })
-        
-    }
+    groupedByNext.forEach((g) => {
+        const option = props.skus.find(sku => sku.id === g.next)
+        if (option) {
+            option.disabled = g.products.every((tag) => validate(tag));
+        }
+    })
 
-    select().then(findProducts).then(assemble).then(identify).catch((e) => console.warn(e)).finally(() => console.log('select accomplished'))
 
 }
 
