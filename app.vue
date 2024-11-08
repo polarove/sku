@@ -27,10 +27,10 @@
 		</div>
 		<main class="px-128 mt-64">
 			<div class="bg-#222222 px-8 py-2 rounded text-xl mb-24">
-				<content-doc path="/enum" />
+				<content-doc />
 			</div>
 			<div class="bg-#222222 px-8 py-2 rounded text-xl mb-24">
-				<content-doc />
+				<content-doc path="/spec" />
 			</div>
 			<div class="bg-#222222 px-8 py-2 rounded text-xl">
 				<content-doc path="/good" />
