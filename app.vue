@@ -16,8 +16,8 @@
 				<transition name="center">
 					<div class="w-30vw px-12" v-if="visible">
 						<multi-sku-selector :skus="tags" :specs="specs" />
-						<!-- <multi-sku-selector :skus="tags2" :specs="specs2" /> -->
-					<!-- <multi-sku-selector :skus="tags3" :specs="specs3" /> -->
+						<multi-sku-selector :skus="tags2" :specs="specs2" />
+						<multi-sku-selector :skus="tags3" :specs="specs3" />
 					</div>
 				</transition>
 				<transition name="right">

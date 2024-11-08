@@ -15,7 +15,7 @@ export const tags: ISKU[] = [
         parentIds: [1],
         price: 2001,
         originalPrice: 220,
-        stock: 0,
+        stock: 5,
         threshold: 5,
         sales: 20,
         weight: 10.00,
@@ -43,5 +43,5 @@ export const tags: ISKU[] = [
         threshold: 5,
         sales: 20,
         weight: 10.00,
-    }
+    },
 ]
