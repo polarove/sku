@@ -5,9 +5,9 @@
         <p>😎对齐</p>
         <div class="bg-#222222 px-8 py-2 rounded">
             <div v-for="item of data" :key="item.id"
-                class="b-1 b-solid b-gray-600 p-2 my-4 rounded hover:b-gray cursor-pointer"
+                class="b-1 b-solid b-gray-600 p-2 my-4 rounded hover:b-red cursor-pointer"
                 :class="[selection === item.id ? 'b-red' : '']" @click="handleSelection(item.id)">
-                <div class="color-red w-8% inline-block">￥{{ item.price }}</div>
+                <div class="color-red mr-4 inline-block">￥{{ item.price }}</div>
                 <span>{{ item.title }}</span>
             </div>
             <div class="h-1" style="border-top: 1px solid gray;"></div>

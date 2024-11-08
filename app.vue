@@ -9,12 +9,15 @@
 					<p>😥缺陷：由于一张表内存放了一个商品多个 sku 的上下级关系，因此需要设计更直观的后台管理页面和交互，防止人为误操作导致的脏数据</p>
 				</section>
 			</transition>
-			<div class="flex justify-between items-start mt-12">
+			<div class="grid grid-cols-3 justify-between items-start mt-12">
 				<transition name="left">
-					<dynamic-sku-selector v-if="visible" class="w-50vw px-12" />
+					<dynamic-sku-selector v-if="visible" class="w-30vw px-12" />
+				</transition>
+				<transition name="center">
+					<multi-sku-selector v-if="visible" class="w-30vw px-12" />
 				</transition>
 				<transition name="right">
-					<single-sku-selector v-if="visible" class="w-50vw px-12" />
+					<single-sku-selector v-if="visible" class="w-30vw px-12" />
 				</transition>
 			</div>
 		</div>
@@ -69,6 +72,17 @@ body {
 	opacity: 0;
 	transform: translate3D(-50%, 0, 0);
 }
+
+.cener-enter-active,
+.cener-leave-active {
+	transition:	opacity 456ms;
+}
+
+.cener-enter-from,
+.cener-leave-to {
+	opacity: 0;
+}
+
 
 .right-enter-active,
 .right-leave-active {
