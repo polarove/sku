@@ -102,18 +102,15 @@ const getFilteredProducts = (
 }
 
 const groupProductsByNext = (products: ISKU[]): GroupedByNext[] => {
-    return products.map(tag => ({
-        product: tag,
-        next: tag.parentIds[selections.length] ?? tag.id
-    })).reduce((groups, item) => {
+    const assemble = (groups: GroupedByNext[], item: { next: number, product: ISKU }) => {
         const group = groups.find(g => g.next === item.next)
-        if (group) {
-            group.products.push(item.product)
-        } else {
-            groups.push({ next: item.next, products: [item.product] })
-        }
+        if (group) group.products.push(item.product)
+        else groups.push({ next: item.next, products: [item.product] })
         return groups;
-    }, [] as GroupedByNext[])
+    }
+    return products
+        .map(tag => ({ product: tag, next: tag.parentIds[selections.length] ?? tag.id }))
+        .reduce((groups, item) => assemble(groups, item), [] as GroupedByNext[])
 }
 
 // 初始调用
