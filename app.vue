@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div class="h-90vh">
+		<div>
 			<transition name="down">
 				<section class="text-center mt-24" v-if="visible">
 					<p>✨支持情况：依赖vue，若小程序如果使用 uniapp 开发，可以完美复现，直接ctrl c+v；若使用原生微信小程序，则需要花费一定时间做适配</p>
@@ -14,14 +14,18 @@
 					<dynamic-sku-selector v-if="visible" class="w-30vw px-12" />
 				</transition>
 				<transition name="center">
-					<multi-sku-selector v-if="visible" class="w-30vw px-12" />
+					<div class="w-30vw px-12" v-if="visible">
+						<multi-sku-selector :skus="tags" :specs="specs" />
+						<!-- <multi-sku-selector :skus="tags2" :specs="specs2" /> -->
+					<!-- <multi-sku-selector :skus="tags3" :specs="specs3" /> -->
+					</div>
 				</transition>
 				<transition name="right">
 					<single-sku-selector v-if="visible" class="w-30vw px-12" />
 				</transition>
 			</div>
 		</div>
-		<main class="px-128">
+		<main class="px-128 mt-64">
 			<div class="bg-#222222 px-8 py-2 rounded text-xl mb-24">
 				<content-doc path="/enum" />
 			</div>
@@ -29,15 +33,20 @@
 				<content-doc />
 			</div>
 			<div class="bg-#222222 px-8 py-2 rounded text-xl">
-				<content-doc path="/good"/>
+				<content-doc path="/good" />
 			</div>
 		</main>
 	</div>
 </template>
 
 <script lang="ts" setup>
+import { tags, specs } from './components/multi-sku-selector/data';
+import { tags2, specs2 } from './components/multi-sku-selector/data2';
+import { tags3, specs3 } from './components/multi-sku-selector/data3'
+
 const visible = ref(false)
-setTimeout(() => visible.value = true);
+onMounted(() => visible.value = true)
+
 </script>
 
 
@@ -73,13 +82,13 @@ body {
 	transform: translate3D(-50%, 0, 0);
 }
 
-.cener-enter-active,
-.cener-leave-active {
-	transition:	opacity 456ms;
+.center-enter-active,
+.center-leave-active {
+	transition: opacity 456ms;
 }
 
-.cener-enter-from,
-.cener-leave-to {
+.center-enter-from,
+.center-leave-to {
 	opacity: 0;
 }
 
