@@ -9,7 +9,8 @@
                     {{ spec.label }}
                 </div>
                 <div v-for="tag in tags.filter(e => e.specId === spec.id)"
-                    class="inline-block mr-4 text-xl cursor-pointer" @click="handleSelection(depth, tag.id, tag.disabled)"
+                    class="inline-block mr-4 text-xl cursor-pointer"
+                    @click="handleSelection(depth, tag.id, tag.disabled)"
                     :class="[selections.length >= depth ? '' : 'color-gray cursor-not-allowed', tag.disabled ? 'color-gray cursor-not-allowed' : '', selections.includes(tag.id) ? 'color-blue' : '']">
                     {{ tag.labels.join(', ') }}
                 </div>
@@ -29,38 +30,55 @@ import { specs, tags, type Tags } from './data'
 const selections = reactive<number[]>([])
 const product = ref<Tags | undefined>(undefined)
 
+
 const handleSelection = (depth: number, id: number, disabled: boolean | undefined) => {
-    if(disabled !== true) {
-        if(selections.length >= depth) {
-             selections.splice(depth)
+    if (!disabled) {
+        if (depth > selections.length) {
+            console.error('Depth exceeds the length of selections');
+            return;
         }
-        selections.splice(depth, 0, id)
+        if (selections.length >= depth) {
+            selections.splice(depth);
+            product.value = undefined;
+        }
+        selections.splice(depth, 0, id);
     }
 
-    const expose = (tag: Tags, next: number) => {
-        const { stock, threshold } = tag
+    let newProduct: Tags | undefined;
 
-        // 下一层中，需要修改 disabled 状态的选项
-        const option = tags.find((tag) => tag.id === next)
-        
+    const expose = (tag: Tags, next: number | undefined) => {
+        const { stock, threshold } = tag;
 
-        if (next && option) {
-            // 如果 next 存在，说明没选完，且下一个选项列表中有该选项
-            // 验证下一层中所有可选的 sku 是否有库存，是否满足阈值
-            return Object.assign(option, { disabled: stock <= 0 || (threshold && (stock <= threshold)) })
+        // 查找需要修改 disabled 状态的选项
+        const option = next ? tags.find((tag) => tag.id === next) : undefined;
+
+        if (option) {
+            // 验证下一层中所有可选的 SKU 是否有库存，是否满足阈值
+            option.disabled = stock <= (threshold ?? 0);
+            return option;
         } else {
-            // 选完了，根据 selections 中的 ids 查找选择的 sku, 显示商品信息
-            if (tag.parentIds.every((id, index) => selections[index] === id)) {
-                return product.value = tag
+            // 根据 selections 中的 ids 查找选择的 SKU，显示商品信息
+            const isSelected = tag.parentIds.every((id, index) => selections[index] === id) && selections.length === tag.parentIds.length;
+            if (isSelected) {
+                newProduct = tag;
+                return newProduct;
             }
         }
-    }
+    };
 
-    tags
-        .filter((tag) => tag.parentIds[depth] === id)
-        .map((t) => ({ product: t, next: t.parentIds[selections.length] }))
-        .forEach((f) => expose(f.product, f.next))
+    const filteredTags = tags.filter((tag) => tag.parentIds.slice(0, selections.length).every((id, index) => selections[index] === id));
+    filteredTags.map((t) => ({ product: t, next: t.parentIds[selections.length] })).forEach((f) => expose(f.product, f.next));
+
+    if (newProduct) {
+        product.value = newProduct;
+    }
 }
+
+
+
+
+
+
 
 
 
