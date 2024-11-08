@@ -30,13 +30,13 @@ const selections = reactive<number[]>([])
 const product = ref<Tags | undefined>(undefined)
 
 const handleSelection = (depth: number, id: number, disabled: boolean | undefined) => {
-    if (selections.length >= depth && disabled !== true) {
-        selections.splice(depth)
+    if(disabled !== true) {
+        if(selections.length >= depth) {
+             selections.splice(depth)
+        }
+        selections.splice(depth, 0, id)
     }
-    if(disabled !== true) selections.splice(depth, 0, id)
 
-    console.log(selections);
-    
     const expose = (tag: Tags, next: number) => {
         const { stock, threshold } = tag
 
@@ -46,6 +46,7 @@ const handleSelection = (depth: number, id: number, disabled: boolean | undefine
 
         if (next && option) {
             // 如果 next 存在，说明没选完，且下一个选项列表中有该选项
+            // 验证下一层中所有可选的 sku 是否有库存，是否满足阈值
             return Object.assign(option, { disabled: stock <= 0 || (threshold && (stock <= threshold)) })
         } else {
             // 选完了，根据 selections 中的 ids 查找选择的 sku, 显示商品信息
