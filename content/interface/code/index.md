@@ -1,3 +1,6 @@
+
+
+```vue
 <template>
     <section>
         <h1>不会变更的sku选择器</h1>
@@ -10,7 +13,10 @@
                 </div>
                 <div v-for="tag in skus.filter(e => e.specId === spec.id)"
                     class="inline-block mr-4 text-xl cursor-pointer" @click="handleSelection(depth, skus.indexOf(tag))"
-                    :class="[selections.includes(tag.id) ? tag.disabled ? 'color-red' : 'color-blue' : '', tag.disabled === true ? 'color-gray' : '', selections.length < depth ? 'color-gray cursor-not-allowed' : '']">
+                    :class="[
+                        selections.includes(tag.id) ? tag.disabled ? 'color-red' : 'color-blue' : '', 
+                        tag.disabled === true ? 'color-gray' : '', 
+                        selections.length < depth ? 'color-gray cursor-not-allowed' : '']">
                     {{ tag.labels.join(', ') }}
                 </div>
             </div>
@@ -139,3 +145,4 @@ const groupProductsByNext = (products: ISKU[]): GroupedByNext[] => {
  */
 handleSelection(0, 0)
 </script>
+```
