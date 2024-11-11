@@ -8,15 +8,22 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "fix": "eslint . --fix"
+    "fix": "eslint . --fix",
+    "prepare": "husky"
   },
   "dependencies": {
     "@nuxt/content": "^2.13.4",
+    "@nuxt/eslint": "^0.6.1",
     "@unocss/nuxt": "^0.64.0",
     "nuxt": "^3.14.0",
     "vue": "latest",
     "vue-router": "latest"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^9.14.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "typescript": "^5.6.3"
+  }
 }

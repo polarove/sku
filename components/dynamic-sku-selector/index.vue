@@ -4,18 +4,21 @@
         <p>🧐相似场景：奶茶加料</p>
         <p>😥缺陷：不能信任 Javascript 的数字计算能力，价格应当通过请求发到后端进行计算</p>
         <div class="bg-#222222 px-8 py-2 rounded">
-            <div v-for="spec, index in specs" class="my-8">
+            <div v-for="spec, index in specs" :key="index" class="my-8">
                 <div class="mb-4 flex justify-between items-center w100%">
                     <span class="text-2xl font-bold">{{ spec.name }}</span>
                     <span>{{ prices[index] === undefined ? '等待选择' : `￥${prices[index]}` }}</span>
                 </div>
-                <div v-for="sku of calculateSku(spec.id)" :key="sku.id" class="inline-block mr-4 cursor-pointer text-xl"
+                <div 
+                    v-for="sku of calculateSku(spec.id)" 
+                    :key="sku.id" 
+                    class="inline-block mr-4 cursor-pointer text-xl"
                     :class="[selections.includes(sku.id) ? 'color-blue' : '', selections.length < index ? 'color-gray-500 cursor-not-allowed' : 'hover:color-blue']"
                     @click="() => handleSelect(sku.id, index)">
                     {{ sku.name }}
                 </div>
             </div>
-            <div class="h-1" style="border-top: 1px solid gray;"></div>
+            <div class="h-1" style="border-top: 1px solid gray;" />
             <div class="my-4 text-2xl flex justify-between items-center">
                 <span>最终价格</span>
                 <span class="color-red">￥{{ finalPrice }}</span>
@@ -30,8 +33,8 @@
             {{ result }}
         </p>
         <div>
-            <button @click="handleSubmit(false)" class="p-4 text-lg rounded-md">提交订单（选项不能含空值）</button>
-            <button @click="handleSubmit(true)" class="p-4 text-lg mx-4 rounded-md">提交订单（选项允许含空值）</button>
+            <button class="p-4 text-lg rounded-md" @click="handleSubmit(false)">提交订单（选项不能含空值）</button>
+            <button class="p-4 text-lg mx-4 rounded-md" @click="handleSubmit(true)">提交订单（选项允许含空值）</button>
         </div>
     </section>
 </template>

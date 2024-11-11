@@ -8,13 +8,15 @@
                 <div class="mb-4 font-bold text-2xl">
                     {{ spec.label }}
                 </div>
-                <div v-for="tag in skus.filter(e => e.specId === spec.id)"
-                    class="inline-block mr-4 text-xl cursor-pointer" @click="handleSelection(depth, skus.indexOf(tag))"
-                    :class="[selections.includes(tag.id) ? tag.disabled ? 'color-red' : 'color-blue' : '', tag.disabled === true ? 'color-gray' : '', selections.length < depth ? 'color-gray cursor-not-allowed' : '']">
+                <div
+                    v-for="tag in skus.filter(e => e.specId === spec.id)" :key="tag.id"
+                    class="inline-block mr-4 text-xl cursor-pointer"
+                    :class="[selections.includes(tag.id) ? tag.disabled ? 'color-red' : 'color-blue' : '', tag.disabled === true ? 'color-gray' : '', selections.length < depth ? 'color-gray cursor-not-allowed' : '']"
+                    @click="handleSelection(depth, skus.indexOf(tag))">
                     {{ tag.labels.join(', ') }}
                 </div>
             </div>
-            <div class="h-1" style="border-top: 1px solid gray;"></div>
+            <div class="h-1" style="border-top: 1px solid gray;" />
             <div class="my-4 text-2xl flex justify-between items-center">
                 <span>产品</span>
                 <span :class="[product == null ? 'color-gray' : product.disabled ? 'color-red' : 'color-blue']">
@@ -30,17 +32,17 @@
 </template>
 
 <script lang='ts' setup>
-import { type ISpec, type ISKU, type ITag } from './types'
+import type { ISpec, ISKU } from './types'
 
 interface GroupedByNext { next: number; products: ISKU[]; }
 
 const props = defineProps<{ specs: ISpec[], skus: ISKU[], border?: boolean }>()
 
 const selections = reactive<number[]>([])
-const isFullySelected = (item: ISKU, selections: number[], specs: ISpec[]) => { 
-    return selections.length === item.parentIds.length 
-    && selections.length === specs.length 
-    && item.parentIds.every((id, index) => selections[index] === id) 
+const isFullySelected = (item: ISKU, selections: number[], specs: ISpec[]) => {
+    return selections.length === item.parentIds.length
+        && selections.length === specs.length
+        && item.parentIds.every((id, index) => selections[index] === id)
 }
 const product = computed(() => { return props.skus.find(sku => isFullySelected(sku, selections, props.specs)); })
 
@@ -54,8 +56,7 @@ const validate = (tag: ISKU) => {
  * @description 因此仅需要在 UI 上提示用户 “库存不足” 之类的即可，选就让他选，选完查一下到底能不能买就完了
  * @description 为什么这么做呢？
  * @description 是因为考虑到用户分享商品时能够通过 url 中的 query 参数拿到信息放入selections数组，从而实现一打开页面就立即选中商品，然后就可以购买的功能
- * 
- * @description 1. 若选项只有一层，则根据自身的状态，如 库存 / 阈值 / 地理位置 等等判断是否可选，判断函数可以自定义，就是上面的 @function validate()
+ * @description 1. 若选项只有一层，则根据自身的状态，如 库存 / 阈值 / 地理位置 等等判断是否可选，判断函数可以自定义， 就是上面的 @function validate()
  * @description 2. 若两层及以上，每选完一层，对下一层的选项更新可选状态
  * 
  * @param depth 层数

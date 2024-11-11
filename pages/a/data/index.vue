@@ -15,22 +15,22 @@
                         <div>
                             <h2>默认状态</h2>
                             <div class="my-2">
-                                <div class="w-12px h-12px bg-white inline-block mr-2"></div>
+                                <div class="w-12px h-12px bg-white inline-block mr-2"/>
                                 <div class="inline-block ">商品有货</div>
                             </div>
                             <div>
-                                <div class="w-12px h-12px bg-gray inline-block mr-2"></div>
+                                <div class="w-12px h-12px bg-gray inline-block mr-2"/>
                                 <div class="inline-block color-gray">商品无货 / 无法选择</div>
                             </div>
                         </div>
                         <div>
                             <h2>选中状态</h2>
                             <div class="my-2">
-                                <div class="w-12px h-12px bg-red inline-block mr-2"></div>
+                                <div class="w-12px h-12px bg-red inline-block mr-2"/>
                                 <div class="inline-block color-red">商品无货</div>
                             </div>
                             <div>
-                                <div class="w-12px h-12px bg-blue inline-block mr-2"></div>
+                                <div class="w-12px h-12px bg-blue inline-block mr-2"/>
                                 <div class="inline-block color-blue">商品有货</div>
                             </div>
                         </div>
@@ -48,17 +48,22 @@
             <div class="mb-8"> 
             <div class="mb-8">
               <div class="mb-8">
-                    <nuxt-link to="/a/types" active-class="color-blue!"
+                    <nuxt-link
+to="/a/types" active-class="color-blue!"
                         class="decoration-none color-inherit cursor-pointer">类型声明</nuxt-link>
-                    <nuxt-link to="/a/code" active-class="color-blue!"
+                    <nuxt-link
+to="/a/code" active-class="color-blue!"
                         class="decoration-none color-inherit ml-4 cursor-pointer">前端代码</nuxt-link>
                 </div>
                 <div>
-                    <nuxt-link to="/a/data" active-class="color-blue!"
+                    <nuxt-link
+to="/a/data" active-class="color-blue!"
                         class="decoration-none color-inherit cursor-pointer">一行spec</nuxt-link>
-                    <nuxt-link to="/a/data/2" active-class="color-blue!"
+                    <nuxt-link
+to="/a/data/2" active-class="color-blue!"
                         class="decoration-none color-inherit ml-4 cursor-pointer">两行spec</nuxt-link>
-                    <nuxt-link to="/a/data/3" active-class="color-blue!"
+                    <nuxt-link
+to="/a/data/3" active-class="color-blue!"
                         class="decoration-none color-inherit ml-4 cursor-pointer">三行spec</nuxt-link>
                 </div>
             </div>

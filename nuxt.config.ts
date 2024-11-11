@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	modules: ['@unocss/nuxt', '@nuxt/content'],
+	modules: ['@unocss/nuxt', '@nuxt/content', '@nuxt/eslint'],
 	devtools: { enabled: true },
 	compatibilityDate: '2024-04-03',
 	app: {
@@ -19,6 +19,16 @@ export default defineNuxtConfig({
 	mdc: {
 		highlight: {
 			langs: ['c#', 'typescript', 'vue']
+		}
+	},
+	eslint: {
+		config: {
+			stylistic: {
+				'indent': 'tab',
+				'commaDangle': 'never',
+				'quotes': 'single',
+				'semi': false,
+			}
 		}
 	}
 })
