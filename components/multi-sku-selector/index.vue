@@ -114,5 +114,5 @@ const groupProductsByNext = (products: ISKU[]): GroupedByNext[] => {
 }
 
 // 初始调用
-handleSelection(0, 0);
+handleSelection(0, 0)
 </script>
