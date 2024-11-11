@@ -1,42 +1,60 @@
 <template>
-
-    <div class="py-24">
-        <transition name="down">
-            <section v-if="visible" class="text-center mt-24">
-                <p>✨支持情况：依赖vue，若小程序如果使用 uniapp 开发，可以完美复现，直接ctrl c+v；若使用原生微信小程序，则需要花费一定时间做适配</p>
-                <p>✨特性：一张表，存储每个商品的Sku，同时支持不同商品的 多层sku嵌套与筛选 和 单sku 列表展示</p>
-                <br>
-                <p>😥缺陷：由于一张表内存放了一个商品多个 sku 的上下级关系，因此需要设计更直观的后台管理页面和交互，防止人为误操作导致的脏数据</p>
-            </section>
-        </transition>
-        <div class="grid grid-cols-3 justify-between items-start mt-12">
-            <transition name="left">
-                <dynamic-sku-selector v-if="visible" class="w-30vw px-12" />
-            </transition>
-            <transition name="center">
-                <div v-if="visible" class="w-30vw px-12">
-                    <multi-sku-selector :skus="tags" :specs="specs" />
-                    <multi-sku-selector :skus="tags2" :specs="specs2" />
-                    <multi-sku-selector :skus="tags3" :specs="specs3" />
-                </div>
-            </transition>
-            <transition name="right">
-                <single-sku-selector v-if="visible" class="w-30vw px-12" />
-            </transition>
-        </div>
-    </div>
+	<div class="py-24">
+		<transition name="down">
+			<section
+				v-if="visible"
+				class="text-center mt-24"
+			>
+				<p>✨支持情况：依赖vue，若小程序如果使用 uniapp 开发，可以完美复现，直接ctrl c+v；若使用原生微信小程序，则需要花费一定时间做适配</p>
+				<p>✨特性：一张表，存储每个商品的Sku，同时支持不同商品的 多层sku嵌套与筛选 和 单sku 列表展示</p>
+				<br>
+				<p>😥缺陷：由于一张表内存放了一个商品多个 sku 的上下级关系，因此需要设计更直观的后台管理页面和交互，防止人为误操作导致的脏数据</p>
+			</section>
+		</transition>
+		<div class="grid grid-cols-3 justify-between items-start mt-12">
+			<transition name="left">
+				<dynamic-sku-selector
+					v-if="visible"
+					class="w-30vw px-12"
+				/>
+			</transition>
+			<transition name="center">
+				<div
+					v-if="visible"
+					class="w-30vw px-12"
+				>
+					<multi-sku-selector
+						:skus="tags"
+						:specs="specs"
+					/>
+					<multi-sku-selector
+						:skus="tags2"
+						:specs="specs2"
+					/>
+					<multi-sku-selector
+						:skus="tags3"
+						:specs="specs3"
+					/>
+				</div>
+			</transition>
+			<transition name="right">
+				<single-sku-selector
+					v-if="visible"
+					class="w-30vw px-12"
+				/>
+			</transition>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { tags, specs } from '../components/multi-sku-selector/data';
-import { tags2, specs2 } from '../components/multi-sku-selector/data2';
+import { tags, specs } from '../components/multi-sku-selector/data'
+import { tags2, specs2 } from '../components/multi-sku-selector/data2'
 import { tags3, specs3 } from '../components/multi-sku-selector/data3'
 
 const visible = ref(false)
 onMounted(() => visible.value = true)
-
 </script>
-
 
 <style>
 body {
@@ -79,7 +97,6 @@ body {
 .center-leave-to {
     opacity: 0;
 }
-
 
 .right-enter-active,
 .right-leave-active {
