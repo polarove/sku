@@ -63,7 +63,7 @@ export const tags2: ISKU[] = [
 	{
 		id: 5,
 		specId: null,
-		labels: ['加菲猫 黑色'],
+		labels: ['加菲猫', '黑色'],
 		parentIds: [1, 3],
 		price: 2001,
 		originalPrice: 220,
@@ -75,7 +75,7 @@ export const tags2: ISKU[] = [
 	{
 		id: 6,
 		specId: null,
-		labels: ['加菲猫 白色'],
+		labels: ['加菲猫', '白色'],
 		parentIds: [1, 4],
 		price: 2002,
 		originalPrice: 220,
