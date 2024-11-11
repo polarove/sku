@@ -2,7 +2,6 @@
 export default defineNuxtConfig({
 	modules: ['@unocss/nuxt', '@nuxt/content', '@nuxt/eslint'],
 	devtools: { enabled: true },
-	compatibilityDate: '2024-04-03',
 	app: {
 		head: {
 			link: [
@@ -21,13 +20,15 @@ export default defineNuxtConfig({
 			langs: ['c#', 'typescript', 'vue']
 		}
 	},
+	compatibilityDate: '2024-04-03',
 	eslint: {
 		config: {
 			stylistic: {
-				'indent': 'tab',
-				'commaDangle': 'never',
-				'quotes': 'single',
-				'semi': false,
+				indent: 'tab',
+				commaDangle: 'never',
+				quotes: 'single',
+				semi: false,
+				quoteProps: 'consistent'
 			}
 		}
 	}
