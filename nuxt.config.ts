@@ -6,7 +6,8 @@ export default defineNuxtConfig({
 	app: {
 		head: {
 			link: [
-				{ rel: 'stylesheet', href: '/stylesheets/scrollbar.css' }
+				{ rel: 'stylesheet', href: '/stylesheets/scrollbar.css' },
+				{ rel: 'stylesheet', href: '/stylesheets/normalize.css' }
 			]
 		}
 	},
