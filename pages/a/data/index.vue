@@ -37,7 +37,7 @@
                     </div>
 
                     <div class="grid grid-cols-3 gap-24">
-                        <multi-sku-selector :skus="tags" :specs="specs" />
+                        <multi-sku-selector :skus="tags" :specs="specs" :border="true"/>
                         <multi-sku-selector :skus="tags2" :specs="specs2" />
                         <multi-sku-selector :skus="tags3" :specs="specs3" />
                     </div>
@@ -47,7 +47,7 @@
         <main class="px-128 mt-32">
             <div class="mb-8"> 
             <div class="mb-8">
-                  <div class="mb-8">
+              <div class="mb-8">
                     <nuxt-link to="/a/types" active-class="color-blue!"
                         class="decoration-none color-inherit cursor-pointer">类型声明</nuxt-link>
                     <nuxt-link to="/a/code" active-class="color-blue!"
@@ -64,16 +64,16 @@
             </div>
             </div>
             <div class="bg-#222222 px-8 py-2 grid grid-cols-2 rounded text-xl mb-24">
-                <content-doc path="/interface/code" />
+                <content-doc path="/interface/data/data" />
             </div>
         </main>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { tags, specs } from '../../components/multi-sku-selector/data';
-import { tags2, specs2 } from '../../components/multi-sku-selector/data2';
-import { tags3, specs3 } from '../../components/multi-sku-selector/data3'
+import { tags, specs } from '../../../components/multi-sku-selector/data';
+import { tags2, specs2 } from '../../../components/multi-sku-selector/data2';
+import { tags3, specs3 } from '../../../components/multi-sku-selector/data3'
 
 const visible = ref(false)
 onMounted(() => visible.value = true)

@@ -3,7 +3,7 @@
         <h1>不会变更的sku选择器</h1>
         <p>🧐 每次选择都将检查下一个 spec 中所有 sku 的库存情况 来决定其是否可选</p>
         <p>🧐 虽然会检查，但用户仍然可以选择，检查仅仅是为了提供ui方面的状态更新</p>
-        <div class="bg-#222222 px-8 py-4 rounded">
+        <div class="bg-#222222 px-8 py-4 rounded" :class="[border ? 'b-2 b-solid b-blue' : '']">
             <div v-for="(spec, depth) in specs" :key="spec.id" class="my-8">
                 <div class="mb-4 font-bold text-2xl">
                     {{ spec.label }}
@@ -34,7 +34,7 @@ import { type ISpec, type ISKU, type ITag } from './types'
 
 interface GroupedByNext { next: number; products: ISKU[]; }
 
-const props = defineProps<{ specs: ISpec[], skus: ISKU[] }>()
+const props = defineProps<{ specs: ISpec[], skus: ISKU[], border?: boolean }>()
 
 const selections = reactive<number[]>([])
 const isFullySelected = (item: ISKU, selections: number[], specs: ISpec[]) => { 

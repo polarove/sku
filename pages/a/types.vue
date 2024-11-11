@@ -45,9 +45,21 @@
             </transition>
         </div>
         <main class="px-128 mt-32">
-            <div class="mb-8"> 
-                <nuxt-link to="/a/types" active-class="color-blue!" class="decoration-none color-inherit cursor-pointer">类型声明</nuxt-link>
-                <nuxt-link to="/a/code" active-class="color-blue!" class="decoration-none color-inherit ml-4 cursor-pointer">前端代码</nuxt-link>
+            <div class="mb-8">
+                <div class="mb-8">
+                    <nuxt-link to="/a/types" active-class="color-blue!"
+                        class="decoration-none color-inherit cursor-pointer">类型声明</nuxt-link>
+                    <nuxt-link to="/a/code" active-class="color-blue!"
+                        class="decoration-none color-inherit ml-4 cursor-pointer">前端代码</nuxt-link>
+                </div>
+                <div>
+                    <nuxt-link to="/a/data" active-class="color-blue!"
+                        class="decoration-none color-inherit cursor-pointer">一行spec</nuxt-link>
+                    <nuxt-link to="/a/data/2" active-class="color-blue!"
+                        class="decoration-none color-inherit ml-4 cursor-pointer">两行spec</nuxt-link>
+                    <nuxt-link to="/a/data/3" active-class="color-blue!"
+                        class="decoration-none color-inherit ml-4 cursor-pointer">三行spec</nuxt-link>
+                </div>
             </div>
             <div class="bg-#222222 px-8 py-2 grid grid-cols-2 rounded text-xl mb-24">
                 <content-doc path="/interface/base/store" />
