@@ -65,10 +65,6 @@ const handleSelection = async (
     depth: number,
     offset: number,
 ): Promise<void> => {
-    // 判断是否越界
-    if(depth > props.specs.length || offset > props.skus.filter(tag => tag.specId === props.specs[depth].id).length) {
-        return console.error("选择越界");
-    }
     const option = props.skus[offset];
     if (depth > selections.length) {
         return console.error("请按顺序选择");
