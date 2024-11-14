@@ -37,16 +37,38 @@
 					/>
 				</el-tab-pane>
 				<el-tab-pane
-					label="查看数据"
+					label="查看选项"
 				>
-					<section>
-						<h2>选项</h2>
-						{{ specs }}
-					</section>
-					<section>
-						<h2>Skus</h2>
-						{{ skus }}
-					</section>
+					<h1>选项</h1>
+					<el-scrollbar
+						v-if="specs && specs.length > 0"
+						max-height="75vh"
+					>
+						<p
+							v-for="(spec, index) of specs"
+							:key="index"
+						>
+							{{ spec }}
+						</p>
+					</el-scrollbar>
+					<el-empty v-else />
+				</el-tab-pane>
+				<el-tab-pane
+					label="查看 Skus"
+				>
+					<h1>Skus</h1>
+					<el-scrollbar
+						v-if="skus && skus.length > 0"
+						max-height="85vh"
+					>
+						<p
+							v-for="(sku, index) of skus"
+							:key="index"
+						>
+							{{ sku }}
+						</p>
+					</el-scrollbar>
+					<el-empty v-else />
 				</el-tab-pane>
 			</el-tabs>
 		</section>
@@ -202,6 +224,10 @@ const processSkuCombination = () => {
 const handleTabChange = (tab: TabPaneName) => {
 	switch (tab) {
 		case '1': processSkuCombination()
+			break
+		case '2': processSkuCombination()
+			break
+		case '3': processSkuCombination()
 			break
 		default:
 			break
