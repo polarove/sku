@@ -32,8 +32,8 @@
 				>
 					<sku-editor
 						:skus="skus"
-						@remove-sku="removeSku"
-						@add-sku="addSku"
+						@review-sku="(sku: ISku) => reviewSku(sku)"
+						@remove-sku="(sku: ISku) => removeSku(sku)"
 					/>
 				</el-tab-pane>
 				<el-tab-pane
@@ -50,28 +50,38 @@
 				</el-tab-pane>
 			</el-tabs>
 		</section>
+		<el-dialog v-model="skuReviewState.visible">
+			<template #header>
+				{{ skuReviewState.data?.title }}
+			</template>
+			<div>{{ skuReviewState.data }}</div>
+		</el-dialog>
 	</div>
 </template>
 
 <script lang='ts' setup>
 import type { TabPaneName } from 'element-plus'
-import type { ISku, ISpec, EditableISpec } from '~/types/goods'
+import { type ISku, type ISpec, type EditableISpec, EnumShopGoodsStatus } from '~/types/goods'
+
+const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
+	data: null,
+	visible: false
+})
 
 const { data: specs } = await useFetch<ISpec[]>('/api/specs/0-0')
 const { data: skus } = await useFetch<ISku[]>('/api/skus/0-0')
 
-const buildPrompt = (name: string) => {
-	return {
-		confirmButtonText: '确认',
-		cancelButtonText: '取消',
-		inputPattern: /^.+$/,
-		inputErrorMessage: `${name}不能为空`
-	}
-}
-
 const addLabel = () => {
 	console.log('add label')
 	const name = '标签名'
+	const buildPrompt = (name: string) => {
+		return {
+			confirmButtonText: '确认',
+			cancelButtonText: '取消',
+			inputPattern: /^.+$/,
+			inputErrorMessage: `${name}不能为空`
+		}
+	}
 	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
 	const handlePush = (value: string) => {
 		specs.value?.push({
@@ -111,14 +121,17 @@ const removeSpec = (spec: ISpec) => {
 	specs.value?.splice(specs.value.indexOf(spec), 1)
 }
 
-const addSku = () => {
+const reviewSku = (sku: ISku) => {
 	console.log('add sku')
+	skuReviewState.visible = true
+	skuReviewState.data = sku
 }
-const removeSku = () => {
+const removeSku = (sku: ISku) => {
 	console.log('remove sku')
+	skus.value?.splice(skus.value.indexOf(sku), 1)
 }
 
-const bfs = (products: ISpec[][] | undefined): ISpec[][] => {
+const bfs = (products: ISpec[][] | null): ISpec[][] => {
 	if (!products) return []
 	let queue: ISpec[][] = [[]]
 
@@ -142,7 +155,7 @@ const bfs = (products: ISpec[][] | undefined): ISpec[][] => {
 /**
  * @description 将商品按next分组，方便后续更新可选状态
  */
-const groupByParentId = (items: ISpec[] | null): ISpec[][] => {
+const groupByParentId = (items: ISpec[] | null): ISpec[][] | null => {
 	if (!items) return []
 	const groupedItems = items.reduce((acc, item) => {
 		const parentId = item.parentId || 0 // 使用 0 作为默认分组
@@ -153,12 +166,37 @@ const groupByParentId = (items: ISpec[] | null): ISpec[][] => {
 		return acc
 	}, {} as { [key: number]: ISpec[] })
 
-	return Object.values(groupedItems)
+	return Object.keys(groupedItems).length <= 0 ? null : Object.values(groupedItems)
+}
+
+function getRandomEnumValueByKey<T extends object>(enumObj: T): T[keyof T] {
+	const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)))
+	const randomKey = enumKeys[Math.floor(Math.random() * enumKeys.length)] as keyof T
+	return enumObj[randomKey]
 }
 
 const processSkuCombination = () => {
 	const groupedItems = groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
-	skus.value = bfs(groupedItems).map((skuGroup, index) => ({ id: index, labels: skuGroup.map(sku => sku.label), specIds: skuGroup.map(sku => sku.id) } as ISku))
+	const assemble = (specGroup: ISpec[], index: number) => {
+		return {
+			id: index,
+			labels: specGroup.map(sku => sku.label),
+			specIds: specGroup.map(sku => sku.id),
+			generalPrice: index % 2 == 0 ? undefined : index * Math.random() * 10 % 2,
+			price: 1000 * Math.random(),
+			favorites: 1000 * Math.random(),
+			sales: 1000 * Math.random(),
+			shares: 1000 * Math.random(),
+			isShowSales: index * Math.random() * 10 % 2 == 1,
+			weight: 100 * Math.random(),
+			status: getRandomEnumValueByKey(EnumShopGoodsStatus),
+			stock: 1000 * Math.random(),
+			threshold: 1000 * Math.random(),
+			title: '测试标题',
+			carousels: []
+		} as ISku
+	}
+	skus.value = bfs(groupedItems).map((specGroup, index) => assemble(specGroup, index))
 }
 
 const handleTabChange = (tab: TabPaneName) => {

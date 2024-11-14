@@ -55,3 +55,10 @@ export interface ISku {
 	status: EnumShopGoodsStatus
 	isShowSales: boolean
 }
+
+export interface IPage<T> {
+	total: number
+	pageNo: number
+	pageSize: number
+	data: T
+}
