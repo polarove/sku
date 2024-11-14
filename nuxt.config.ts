@@ -34,9 +34,13 @@ export default defineNuxtConfig({
 		}
 	},
 	compatibilityDate: '2024-04-03',
+	vite: {
+		css: { preprocessorOptions: { scss: { additionalData: `@use "styles/override.scss";` } } }
+	},
 	elementPlus: {
 		themes: ['dark'],
-		defaultLocale: 'zh-cn'
+		defaultLocale: 'zh-cn',
+		importStyle: 'scss'
 	},
 	eslint: {
 		config: {
