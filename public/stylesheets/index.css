@@ -1,0 +1,13 @@
+:root {
+    --bg-color: #303030;
+    --text-color: #e7e7e7;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.el-tag .el-tag__close {
+    padding: 1px;
+}

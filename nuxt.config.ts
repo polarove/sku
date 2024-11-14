@@ -1,14 +1,27 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	modules: ['@unocss/nuxt', '@nuxt/content', '@nuxt/eslint'],
+	modules: [
+		'@unocss/nuxt',
+		'@nuxt/content',
+		'@nuxt/eslint',
+		'@element-plus/nuxt',
+		'@nuxtjs/color-mode'
+	],
 	devtools: { enabled: true },
 	app: {
 		head: {
 			link: [
 				{ rel: 'stylesheet', href: '/stylesheets/scrollbar.css' },
-				{ rel: 'stylesheet', href: '/stylesheets/normalize.css' }
+				{ rel: 'stylesheet', href: '/stylesheets/normalize.css' },
+				{ rel: 'stylesheet', href: '/stylesheets/index.css' }
 			]
 		}
+	},
+	colorMode: {
+		classSuffix: '',
+		classPrefix: '',
+		fallback: 'dark',
+		preference: 'dark'
 	},
 	content: {
 		highlight: {
@@ -21,6 +34,10 @@ export default defineNuxtConfig({
 		}
 	},
 	compatibilityDate: '2024-04-03',
+	elementPlus: {
+		themes: ['dark'],
+		defaultLocale: 'zh-cn'
+	},
 	eslint: {
 		config: {
 			stylistic: {
