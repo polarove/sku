@@ -118,7 +118,7 @@ const removeSku = () => {
 	console.log('remove sku')
 }
 
-const bfs = async (products: ISpec[][] | undefined): Promise<ISpec[][]> => {
+const bfs = (products: ISpec[][] | undefined): ISpec[][] => {
 	if (!products) return []
 	let queue: ISpec[][] = [[]]
 
@@ -126,46 +126,39 @@ const bfs = async (products: ISpec[][] | undefined): Promise<ISpec[][]> => {
 		const newQueue: ISpec[][] = []
 		while (queue.length > 0) {
 			const currentCombination = queue.shift()
+
 			for (const option of productOptions) {
-				const newCombination = [...(currentCombination ?? []), option]
+				const newCombination = [...currentCombination ?? [], option]
 				newQueue.push(newCombination)
 			}
 		}
+
 		queue = newQueue
 	}
+
 	return queue
 }
 
 /**
- * @description 将商品按 parentId 分组，方便后续更新可选状态
+ * @description 将商品按next分组，方便后续更新可选状态
  */
-const groupByParentId = async (items: ISpec[] | null): Promise<ISpec[][]> => {
+const groupByParentId = (items: ISpec[] | null): ISpec[][] => {
 	if (!items) return []
 	const groupedItems = items.reduce((acc, item) => {
-		const parentId = item.parentId ?? 0 // 使用 0 作为默认分组
+		const parentId = item.parentId || 0 // 使用 0 作为默认分组
 		if (!acc[parentId]) {
 			acc[parentId] = []
 		}
 		acc[parentId].push(item)
 		return acc
-	}, {} as Record<number, ISpec[]>)
+	}, {} as { [key: number]: ISpec[] })
 
 	return Object.values(groupedItems)
 }
 
-const processSkuCombination = async () => {
-	const timestamp = new Date().getTime()
-
-	const groupedItems = await groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
-	const skuCombinations = await bfs(groupedItems)
-	skus.value = skuCombinations.map((skuGroup, index) => ({
-		id: index,
-		labels: skuGroup.map(sku => sku.label),
-		specIds: skuGroup.map(sku => sku.id)
-	} as ISku))
-
-	console.log(skus.value)
-	console.log(new Date().getTime() - timestamp)
+const processSkuCombination = () => {
+	const groupedItems = groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
+	skus.value = bfs(groupedItems).map((skuGroup, index) => ({ id: index, labels: skuGroup.map(sku => sku.label), specIds: skuGroup.map(sku => sku.id) } as ISku))
 }
 
 const handleTabChange = (tab: TabPaneName) => {
