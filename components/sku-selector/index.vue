@@ -57,13 +57,13 @@ const labels = computed(() => props.specs?.filter(spec => spec.parentId == null)
  * @param offset 元素在数组中的位置，即偏移量
  */
 const validateSelection = (depth: number, labelId: number, offset: number | undefined) => {
-	const layer = depth + 1
+	const row = depth + 1
 	if (!props.specs) return Promise.reject('没有可选项，无法选择')
 	if (!props.specs.find(spec => spec.parentId != null)) return Promise.reject('可选项为空，无法选择')
-	if (!offset) return Promise.reject(`无效的选择：第 ${layer} 行第 ${offset} 个`)
+	if (!offset) return Promise.reject(`无效的选择：第 ${offset} 个`)
 	const option = props.specs[offset]
-	if (!option) return Promise.reject(`选项不存在：第 ${layer} 行第 ${offset} 个`)
-	if (option.parentId !== labelId) return Promise.reject(`错误的选择：第 ${layer} 行第 ${offset} 个`)
+	if (!option) return Promise.reject(`选项不存在：第 ${row} 行第 ${offset} 个`)
+	if (option.parentId !== labelId) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
 	return Promise.resolve(option.id)
 }
@@ -73,7 +73,7 @@ const validateSelection = (depth: number, labelId: number, offset: number | unde
  * @param depth 深度，当前选择的层数，用来判断是新增选择还是删除已选项
  * @param offset 偏移量
  */
-const select = (depth: number, id: number): void => {
+const select = (depth: number, id: number): number => {
 	if (depth < selections.length) {
 		if (selections[depth] === id) {
 			selections.splice(depth)
@@ -84,11 +84,18 @@ const select = (depth: number, id: number): void => {
 		}
 	}
 	else selections.splice(depth, 0, id)
+	return depth + 1
+}
+
+/**
+ * @description 更新下一层选项的可选状态
+ */
+const updateOptionState = (nextDepth: number) => {
+	console.log('next depth', nextDepth)
 }
 
 const findProduct = () => {
-	console.log(selections)
-
+	console.log('find my product', selections)
 	console.log(props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
 }
 
@@ -101,6 +108,7 @@ const findProduct = () => {
 const wrapSelect = (depth: number, label: ISpec, option: ISpec) => {
 	validateSelection(depth, label.id, props.specs?.indexOf(option))
 		.then(offset => select(depth, offset))
+		.then(nextDepth => updateOptionState(nextDepth))
 		.then(() => findProduct())
 }
 
