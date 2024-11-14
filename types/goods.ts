@@ -17,7 +17,7 @@ export interface ISpec {
 export interface EditableISpec extends ISpec {
 	parentId: number
 	inputValue?: string
-	inputVisible: boolean
+	inputVisible?: boolean
 }
 
 export enum EnumShopGoodsStatus {
@@ -39,7 +39,7 @@ export enum EnumShopGoodsStatus {
 
 export interface ISku {
 	id: number
-	label: string[]
+	labels: string[]
 	specIds: number[]
 	carousels: string[]
 	title: string

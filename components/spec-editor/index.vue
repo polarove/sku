@@ -41,13 +41,23 @@
 			</el-button>
 		</div>
 	</div>
-	<el-button
-		class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center w-100% rounded-md"
-		style="height: 48px;"
-		@click="$emit('addLabel')"
-	>
-		<span class="i-mdi:plus color-white text-3xl" />
-	</el-button>
+	<div class="flex justify-evenly w-100%">
+		<el-button
+			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
+			style="height: 48px;"
+			type="primary"
+			@click="$emit('addLabel')"
+		>
+			<span class="i-mdi:plus color-white text-3xl" />新增标签
+		</el-button>
+		<el-button
+			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center  flex-1 rounded-md"
+			style="height: 48px;"
+			@click="$emit('addDefaultSpecs')"
+		>
+			添加默认标签与选项
+		</el-button>
+	</div>
 </template>
 
 <script lang='ts' setup>
@@ -58,13 +68,13 @@ defineProps<{ specs: EditableISpec[] | null }>()
 const emit = defineEmits<{
 	(e: 'removeSpec' | 'removeLabel', tag: ISpec): void
 	(e: 'addSpec', tag: { label: string, parentId: number }): void
-	(e: 'addLabel'): void
+	(e: 'addLabel' | 'addDefaultSpecs'): void
 }>()
 const handleInputConfirm = (parent: EditableISpec) => {
 	if (parent.inputValue) {
 		emit('addSpec', { label: parent.inputValue, parentId: parent.id })
 	}
-	parent.inputValue = ''
-	parent.inputVisible = false
+	delete parent.inputValue
+	delete parent.inputVisible
 }
 </script>

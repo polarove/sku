@@ -24,6 +24,7 @@
 						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => addSpec(tag)"
 						@remove-label="(label) => removeLabel(label)"
 						@remove-spec="(spec: ISpec) => removeSpec(spec)"
+						@add-default-specs="addDefaultSpecs"
 					/>
 				</el-tab-pane>
 				<el-tab-pane
@@ -68,19 +69,13 @@ const buildPrompt = (name: string) => {
 	}
 }
 
-const biggestId = (): number => {
-	if (specs.value && specs.value.length > 0) {
-		return Math.max(...specs.value.map(spec => spec.id))
-	}
-	return 0
-}
-
 const addLabel = () => {
 	console.log('add label')
 	const name = '标签名'
+	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
 	const handlePush = (value: string) => {
 		specs.value?.push({
-			id: biggestId() + 1,
+			id: currentId++,
 			label: value,
 			sort: 1
 		})
@@ -101,8 +96,10 @@ const removeLabel = (label: ISpec) => {
 const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 	console.log('add spec', tag)
 	const handlePush = (tag: ISpec) => specs.value?.push(tag)
+	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
+
 	handlePush({
-		id: biggestId() + 1,
+		id: currentId++,
 		label: tag.label,
 		parentId: tag.parentId,
 		sort: 1
@@ -121,35 +118,91 @@ const removeSku = () => {
 	console.log('remove sku')
 }
 
-// const bfs = (products: ISpec[][] | undefined) => {
-// 	if (!products) return
-// 	let queue: [][] = [[]] // 初始队列，包含一个空的组合
+const bfs = async (products: ISpec[][] | undefined): Promise<ISpec[][]> => {
+	if (!products) return []
+	let queue: ISpec[][] = [[]]
 
-// 	for (const productOptions of products) {
-// 		const newQueue: [][] = []
+	for (const productOptions of products) {
+		const newQueue: ISpec[][] = []
+		while (queue.length > 0) {
+			const currentCombination = queue.shift()
+			for (const option of productOptions) {
+				const newCombination = [...(currentCombination ?? []), option]
+				newQueue.push(newCombination)
+			}
+		}
+		queue = newQueue
+	}
+	return queue
+}
 
-// 		while (queue.length > 0) {
-// 			const currentCombination = queue.shift() // 从队列中取出一个组合
+/**
+ * @description 将商品按 parentId 分组，方便后续更新可选状态
+ */
+const groupByParentId = async (items: ISpec[] | null): Promise<ISpec[][]> => {
+	if (!items) return []
+	const groupedItems = items.reduce((acc, item) => {
+		const parentId = item.parentId ?? 0 // 使用 0 作为默认分组
+		if (!acc[parentId]) {
+			acc[parentId] = []
+		}
+		acc[parentId].push(item)
+		return acc
+	}, {} as Record<number, ISpec[]>)
 
-// 			for (const option of productOptions) {
-// 				const newCombination = [...currentCombination, option] // 生成新的组合
-// 				newQueue.push(newCombination) // 将新组合加入新队列
-// 			}
-// 		}
+	return Object.values(groupedItems)
+}
 
-// 		queue = newQueue // 更新队列为新队列
-// 	}
+const processSkuCombination = async () => {
+	const timestamp = new Date().getTime()
 
-// 	return queue
-// }
-// bfs([[]])
+	const groupedItems = await groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
+	const skuCombinations = await bfs(groupedItems)
+	skus.value = skuCombinations.map((skuGroup, index) => ({
+		id: index,
+		labels: skuGroup.map(sku => sku.label),
+		specIds: skuGroup.map(sku => sku.id)
+	} as ISku))
+
+	console.log(skus.value)
+	console.log(new Date().getTime() - timestamp)
+}
 
 const handleTabChange = (tab: TabPaneName) => {
 	switch (tab) {
-		case '1': console.log('编辑sku')
+		case '1': processSkuCombination()
 			break
 		default:
 			break
 	}
+}
+
+const addDefaultSpecs = () => {
+	const labels: ISpec[] = [
+		{ id: 1, label: '品种', sort: 1 },
+		{ id: 2, label: '毛色', sort: 2 },
+		{ id: 3, label: '年龄', sort: 3 },
+		{ id: 4, label: '性别', sort: 4 },
+		{ id: 5, label: '是否绝育', sort: 5 }
+	]
+
+	const species = ['加菲猫', '布偶猫', '狸花猫', '暹罗猫', '美国短毛猫', '英国短毛猫', '无毛猫']
+	const color = ['白', '黑', '深蓝', '深紫', '黑白斑点']
+	const age = ['1 月龄', '2 月龄', '3 月龄', '6 月龄', '9 月龄', '12 月龄']
+	const gender = ['公', '母']
+	const isCastrated = ['已绝育', '未绝育']
+
+	const categories = [
+		{ items: species, parentId: 1 },
+		{ items: color, parentId: 2 },
+		{ items: age, parentId: 3 },
+		{ items: gender, parentId: 4 },
+		{ items: isCastrated, parentId: 5 }
+	]
+
+	let currentId = Math.max(...labels.map(l => l.id)) + 1
+	categories.forEach(category => category.items.forEach(item => labels.push({ id: currentId++, label: item, parentId: category.parentId, sort: 1 })))
+
+	specs.value = labels
 }
 </script>

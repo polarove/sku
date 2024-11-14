@@ -1,5 +1,10 @@
 <template>
-	<div />
+	<div
+		v-for="(sku, index) of skus"
+		:key="index"
+	>
+		{{ sku.labels.join(', ') }}{{ skus?.length }}
+	</div>
 </template>
 
 <script lang='ts' setup>
