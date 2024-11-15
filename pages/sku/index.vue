@@ -19,7 +19,7 @@
 				>
 					<spec-editor
 						:specs="(specs as EditableISpec[])"
-						@add-label="addLabel"
+						@add-label="handleAddLabel"
 						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => addSpec(tag)"
 						@remove-label="(label) => removeLabel(label)"
 						@remove-spec="(spec: ISpec) => removeSpec(spec)"
@@ -89,10 +89,21 @@ const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
 	visible: false
 })
 
-const { data: specs } = await useFetch<ISpec[]>('/api/specs/0-0')
+const { data: specs } = await useFetch<ISpec[] | null>('/api/specs/0-0')
 const { data: skus } = await useFetch<ISku[] | null>('/api/skus/0-0')
 
-const addLabel = () => {
+const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
+	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
+	specs.value?.push({
+		id: currentId++,
+		label: tag.label,
+		parentId: tag.parentId,
+		sort: 1
+	})
+	return tag.label
+}
+
+const handleAddLabel = () => {
 	console.log('add label')
 	const name = '标签名'
 	const buildPrompt = (name: string) => {
@@ -103,18 +114,10 @@ const addLabel = () => {
 			inputErrorMessage: `${name}不能为空`
 		}
 	}
-	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
-	const handlePush = (value: string) => {
-		specs.value?.push({
-			id: currentId++,
-			label: value,
-			sort: 1
-		})
-		return value
-	}
+
 	ElMessageBox
 		.prompt(`输入${name}`, '提示', buildPrompt(name))
-		.then(({ value }) => handlePush(value))
+		.then(({ value }) => addSpec({ label: value, parentId: undefined }))
 		.then(label => ElMessage({ type: 'success', message: `添加了一个标签: ${label}` }))
 		.catch(() => ElMessage({ type: 'warning', message: '取消' }))
 }
@@ -124,17 +127,6 @@ const removeLabel = (label: ISpec) => {
 	specs.value = specs.value?.filter(spec => spec !== label && spec.parentId !== label.id) as (ISpec[] | null)
 }
 
-const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
-	console.log('add spec', tag)
-	const handlePush = (tag: ISpec) => specs.value?.push(tag)
-	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
-	handlePush({
-		id: currentId++,
-		label: tag.label,
-		parentId: tag.parentId,
-		sort: 1
-	})
-}
 const removeSpec = (spec: ISpec) => {
 	console.log('remove spec')
 	specs.value?.splice(specs.value.indexOf(spec), 1)
@@ -156,6 +148,10 @@ const removeSku = (sku: ISku) => {
 	skus.value?.splice(skus.value.indexOf(sku), 1)
 }
 
+/**
+ * @description 获取所有组合
+ * @param products 商品规格
+ */
 const bfs = (products: ISpec[][] | null): ISpec[][] => {
 	if (!products) return []
 	let queue: ISpec[][] = [[]]

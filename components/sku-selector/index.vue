@@ -30,7 +30,10 @@
 			</div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">原价</span>
-				<span class="text-2xl color-red">{{ productGeneralPrice }}</span>
+				<span
+					class="text-2xl color-red"
+					:class="[product && 'decoration-line-through']"
+				>{{ productGeneralPrice }}</span>
 			</div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">优惠价</span>
