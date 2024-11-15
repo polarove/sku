@@ -1,7 +1,7 @@
 <template>
 	<el-scrollbar
 		v-if="specs && specs.length > 0"
-		max-height="75vh"
+		max-height="85vh"
 	>
 		<p
 			v-for="(spec, index) of specs"
