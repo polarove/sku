@@ -54,6 +54,7 @@ import { EnumShopGoodsStatus, type ISku, type ISpec, type ISpecOption } from '~/
 const props = defineProps<{ specs: ISpecOption[] | null, skus: ISku[] | null }>()
 const emits = defineEmits<{
 	(e: 'on-mistake', err: string[] | undefined): void
+	(e: 'on-error', err: string): void
 }>()
 const selections = reactive<number[]>([])
 
@@ -144,8 +145,6 @@ const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[],
 const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => {
 	if (!target.option) return
 	const hint = []
-	console.log(target.option)
-	console.log(target.skus, target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden))
 
 	if (target.skus.length === 0) hint.push('本选项未设置相应产品')
 	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Down)) hint.push('本选项下所有商品已下架')
@@ -169,7 +168,7 @@ const handleSelect = (depth: number, label: ISpec, option: ISpec) => {
 		.then(({ candidates, nextDepth }) => mapOptionIdsAroundNextDepth(candidates, nextDepth))
 		.then(({ candidates, optionIds, depth }) => mapSkusAroundNextDepth(optionIds, candidates, depth))
 		.then(skuUnderTheSelection => skuUnderTheSelection.forEach(validate))
-		.catch(err => ElMessage.warning(err))
+		.catch(err => emits('on-error', err))
 }
 
 const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))

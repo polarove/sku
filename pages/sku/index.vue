@@ -1,15 +1,19 @@
 <template>
 	<div class="flex">
-		<section class="w-50vw px-12">
+		<el-card
+			shadow="never"
+			class="w-50vw px-12"
+		>
 			<h1 class="text-center">
 				Sku 选择器
 			</h1>
 			<sku-selector
 				:specs="specs"
 				:skus="skus"
-				@on-mistake="(err?:string[]) => handleMistake(err)"
+				@on-mistake="(err?: string[]) => handleMistake(err)"
+				@on-error="(err?: string) => handleError(err)"
 			/>
-		</section>
+		</el-card>
 		<section class="w-50vw px-12">
 			<el-tabs
 				tab-position="top"
@@ -307,5 +311,9 @@ const handleClearSpecs = () => {
 
 const handleMistake = (err?: string[]) => {
 	ElMessage.error(err?.join(' | ') ?? '错误的选择')
+}
+
+const handleError = (err?: string) => {
+	ElMessage.warning(err ?? '错误的选择')
 }
 </script>
