@@ -41,7 +41,7 @@
 			</el-button>
 		</div>
 	</div>
-	<div class="flex justify-evenly w-100%">
+	<div class="flex justify-evenly w-100% mt-8">
 		<el-button
 			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
 			style="height: 48px;"
