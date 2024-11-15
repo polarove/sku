@@ -133,7 +133,7 @@ const mapOptionIdsAroundNextDepth = async (candidates: ISku[], depth: NextDepth)
  * @returns skuUnderTheSelection
  */
 const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[], depth: NextDepth) => {
-	const skuUnderTheSelection = optionIds.map(id => ({ option: props.specs?.find(spec => spec.id === id), sku: candidates.find(sku => sku.specIds[depth] === id) }))
+	const skuUnderTheSelection = optionIds.map(id => ({ option: props.specs?.find(spec => spec.id === id), skus: candidates.filter(sku => sku.specIds[depth] === id) }))
 	return Promise.resolve(skuUnderTheSelection)
 }
 
@@ -141,21 +141,35 @@ const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[],
  * @description 校验函数
  * @param target 需要校验的选项
  */
-const validate = async (target: { option: ISpec | undefined, sku: ISku | undefined }) => {
-	console.log(target)
-
+const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => {
 	if (!target.option) return
 	let hint = ''
-	if (!target.sku) {
-		hint = '没有相应产品'
+
+	/**
+	 * @description 该选项组合下没有任何可售卖的商品sku
+	 */
+	if (target.skus.length === 0) {
+		hint = '本选项未设置相应产品'
 		return Object.assign(target.option, { disabled: true, hint })
 	}
-	if (target.sku.status === EnumShopGoodsStatus.Down) {
+
+	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Down)) {
 		hint = '商品已下架'
 		return Object.assign(target.option, { disabled: true, hint })
 	}
-	if (target.sku.stock < target.sku.threshold) {
+
+	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden)) {
+		hint = '非卖品，仅供展示'
+		return Object.assign(target.option, { disabled: true, hint })
+	}
+
+	if (target.skus.every(sku => sku.stock < sku.threshold)) {
 		hint = '库存告急'
+		return Object.assign(target.option, { disabled: true, hint })
+	}
+
+	if (target.skus.every(sku => sku.stock <= 0)) {
+		hint = '已售罄'
 		return Object.assign(target.option, { disabled: true, hint })
 	}
 }
