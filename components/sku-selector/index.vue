@@ -30,11 +30,11 @@
 			</div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">原价</span>
-				<span class="text-2xl color-red">￥{{ productGeneralPrice }}</span>
+				<span class="text-2xl color-red">{{ productGeneralPrice }}</span>
 			</div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">优惠价</span>
-				<span class="text-2xl color-red">￥{{ productPrice }}</span>
+				<span class="text-2xl color-red">{{ productPrice }}</span>
 			</div>
 		</div>
 	</div>
@@ -94,11 +94,6 @@ const updateOptionState = (nextDepth: number) => {
 	console.log('next depth', nextDepth)
 }
 
-const findProduct = () => {
-	console.log('find my product', selections)
-	console.log(props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
-}
-
 /**
  * @description 选择包装器
  * @param depth 深度
@@ -109,11 +104,11 @@ const wrapSelect = (depth: number, label: ISpec, option: ISpec) => {
 	validateSelection(depth, label.id, props.specs?.indexOf(option))
 		.then(offset => select(depth, offset))
 		.then(nextDepth => updateOptionState(nextDepth))
-		.then(() => findProduct())
+		.catch(err => ElMessage.warning(err))
 }
 
 const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
 const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
-const productGeneralPrice = computed(() => product.value ? product.value.generalPrice ? product.value.generalPrice.toFixed(2) : product.value.price.toFixed(2) : '等待选择')
-const productPrice = computed(() => product.value ? product.value.price.toFixed(2) : '等待选择')
+const productGeneralPrice = computed(() => product.value ? product.value.generalPrice ? `￥${product.value.generalPrice.toFixed(2)}` : `￥${product.value.price.toFixed(2)}` : '等待选择')
+const productPrice = computed(() => product.value ? `￥${product.value.price.toFixed(2)}` : '等待选择')
 </script>
