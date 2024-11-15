@@ -23,9 +23,9 @@
 						@add-label="handleAddLabel"
 						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => addSpec(tag)"
 						@remove-label="(label) => removeLabel(label)"
-						@remove-spec="(spec: ISpec) => removeSpec(spec)"
+						@remove-spec="(spec: ISpec) => handleRemoveSpecs(spec)"
 						@add-default-specs="handleAddDefaultSpecs"
-						@clear-specs="clearSpecs"
+						@clear-specs="handleClearSpecs"
 					/>
 				</el-tab-pane>
 				<el-tab-pane
@@ -103,6 +103,7 @@ const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 		parentId: tag.parentId,
 		sort: 1
 	})
+	generateSkus()
 	return tag.label
 }
 
@@ -128,17 +129,21 @@ const handleAddLabel = () => {
 const removeLabel = (label: ISpec) => {
 	console.log('remove label')
 	specs.value = specs.value?.filter(spec => spec !== label && spec.parentId !== label.id) as (ISpec[] | null)
+	generateSkus()
 }
 
-const removeSpec = (spec: ISpec) => {
-	console.log('remove spec')
-	specs.value?.splice(specs.value.indexOf(spec), 1)
-	const label = specs.value?.find(label => label.id === spec.parentId)
-	if (label) {
-		const hasOption = specs.value?.some(option => option.parentId === label.id)
-		if (!hasOption) specs.value?.splice(specs.value.indexOf(label), 1)
+const handleRemoveSpecs = async (spec: ISpec) => {
+	const removeSpecs = async (label: ISpec) => {
+		specs.value?.splice(specs.value.indexOf(label), 1)
+		return Promise.resolve(label.id)
 	}
-	skus.value?.filter(sku => sku.specIds.includes(spec.id)).forEach(sku => removeSku(sku))
+	const removeSubSpecs = async (labelId: number) => {
+		const subSpecs = specs.value?.filter(spec => spec.parentId === labelId) ?? []
+		Promise.all(subSpecs.map(removeSpecs))
+		return labelId
+	}
+
+	removeSpecs(spec).then(removeSubSpecs).then(generateSkus)
 }
 
 const reviewSku = (sku: ISku) => {
@@ -234,48 +239,51 @@ const clearSku = () => {
 /**
  * @description 生成默认规格
  */
-const addDefaultSpecs = (): Promise<ISpec[]> => {
-	const labels: ISpec[] = [
-		{ id: 1, label: '品种', sort: 1 },
-		{ id: 2, label: '毛色', sort: 2 },
-		{ id: 3, label: '年龄', sort: 3 },
-		{ id: 4, label: '性别', sort: 4 },
-		{ id: 5, label: '是否绝育', sort: 5 }
-	]
-
-	const species = ['加菲猫', '布偶猫', '狸花猫', '暹罗猫', '美国短毛猫', '英国短毛猫', '无毛猫']
-	const color = ['白', '黑', '深蓝', '深紫', '黑白斑点']
-	const age = ['1 月龄', '2 月龄', '3 月龄', '6 月龄', '9 月龄', '12 月龄']
-	const gender = ['公', '母']
-	const isCastrated = ['已绝育', '未绝育']
-
-	const categories = [
-		{ items: species, parentId: 1 },
-		{ items: color, parentId: 2 },
-		{ items: age, parentId: 3 },
-		{ items: gender, parentId: 4 },
-		{ items: isCastrated, parentId: 5 }
-	]
-
-	let currentId = Math.max(...labels.map(l => l.id)) + 1
-	categories.forEach(category => category.items.forEach(item => labels.push({ id: currentId++, label: item, parentId: category.parentId, sort: 1 })))
-
-	return Promise.resolve(labels)
-}
-
-/**
- * @description 生成默认规格
- */
 const handleAddDefaultSpecs = () => {
-	addDefaultSpecs().then(labels => specs.value = labels)
+	/**
+ 	* @description 生成默认规格
+ 	*/
+	const addDefaultSpecs = (): Promise<ISpec[]> => {
+		const labels: ISpec[] = [
+			{ id: 1, label: '品种', sort: 1 },
+			{ id: 2, label: '毛色', sort: 2 },
+			{ id: 3, label: '年龄', sort: 3 },
+			{ id: 4, label: '性别', sort: 4 },
+			{ id: 5, label: '是否绝育', sort: 5 }
+		]
+
+		const species = ['加菲猫', '布偶猫', '狸花猫', '暹罗猫', '美国短毛猫', '英国短毛猫', '无毛猫']
+		const color = ['白', '黑', '深蓝', '深紫', '黑白斑点']
+		const age = ['1 月龄', '2 月龄', '3 月龄', '6 月龄', '9 月龄', '12 月龄']
+		const gender = ['公', '母']
+		const isCastrated = ['已绝育', '未绝育']
+
+		const categories = [
+			{ items: species, parentId: 1 },
+			{ items: color, parentId: 2 },
+			{ items: age, parentId: 3 },
+			{ items: gender, parentId: 4 },
+			{ items: isCastrated, parentId: 5 }
+		]
+
+		let currentId = Math.max(...labels.map(l => l.id)) + 1
+		categories.forEach(category => category.items.forEach(item => labels.push({ id: currentId++, label: item, parentId: category.parentId, sort: 1 })))
+
+		return Promise.resolve(labels)
+	}
+	const assemble = (labels: ISpec[]) => specs.value = labels
+	addDefaultSpecs().then(assemble).then(generateSkus)
 }
 
-watch(() => specs.value, () => generateSkus(), { deep: true })
-
-const clearSpecs = () => {
-	if (specs.value && specs.value.length > 0) {
-		specs.value = []
+const handleClearSpecs = () => {
+	const clearSpecs = () => {
+		if (specs.value && specs.value.length > 0) {
+			specs.value = []
+		}
+		return Promise.resolve()
 	}
+
+	clearSpecs().then(generateSkus)
 }
 
 const handleMistake = (err?: string[]) => {
