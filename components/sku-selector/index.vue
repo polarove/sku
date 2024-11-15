@@ -52,9 +52,9 @@
 import { EnumShopGoodsStatus, type ISku, type ISpec, type ISpecOption } from '~/types/goods'
 
 const props = defineProps<{ specs: ISpecOption[] | null, skus: ISku[] | null }>()
-const emits = defineEmits<{
-	(e: 'on-mistake', err?: string): void
-}>()
+// const emits = defineEmits<{
+// 	(e: 'on-mistake', err?: string): void
+// }>()
 const selections = reactive<number[]>([])
 
 const labels = computed(() => props.specs?.filter(spec => spec.parentId == null))
@@ -80,7 +80,7 @@ const validateSelection = async (depth: Depth, labelId: LabelId, offset: SpecId 
 	if (!option) return Promise.reject(`选项不存在：第 ${row} 行第 ${offset} 个`)
 	if (option.parentId !== labelId) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
-	if (option.disabled) emits('on-mistake', option.hint)
+	// if (option.disabled) emits('on-mistake', option.hint)
 	return Promise.resolve(option.id)
 }
 /**
@@ -142,6 +142,8 @@ const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[],
  * @param target 需要校验的选项
  */
 const validate = async (target: { option: ISpec | undefined, sku: ISku | undefined }) => {
+	console.log(target)
+
 	if (!target.option) return
 	let hint = ''
 	if (!target.sku) {

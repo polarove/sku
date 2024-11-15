@@ -7,7 +7,6 @@
 			<sku-selector
 				:specs="specs"
 				:skus="skus"
-				@on-mistake="(err?:string) => handleMistake(err)"
 			/>
 		</section>
 		<section class="w-50vw px-12">
@@ -276,9 +275,5 @@ const clearSpecs = () => {
 	if (specs.value && specs.value.length > 0) {
 		specs.value = []
 	}
-}
-
-const handleMistake = (err?: string) => {
-	ElMessage.error(err ?? '错误的选择')
 }
 </script>
