@@ -52,9 +52,9 @@
 import { EnumShopGoodsStatus, type ISku, type ISpec, type ISpecOption } from '~/types/goods'
 
 const props = defineProps<{ specs: ISpecOption[] | null, skus: ISku[] | null }>()
-// const emits = defineEmits<{
-// 	(e: 'on-mistake', err?: string): void
-// }>()
+const emits = defineEmits<{
+	(e: 'on-mistake', err: string[] | undefined): void
+}>()
 const selections = reactive<number[]>([])
 
 const labels = computed(() => props.specs?.filter(spec => spec.parentId == null))
@@ -80,7 +80,7 @@ const validateSelection = async (depth: Depth, labelId: LabelId, offset: SpecId 
 	if (!option) return Promise.reject(`选项不存在：第 ${row} 行第 ${offset} 个`)
 	if (option.parentId !== labelId) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
-	// if (option.disabled) emits('on-mistake', option.hint)
+	if (option.disabled) emits('on-mistake', option.hint)
 	return Promise.resolve(option.id)
 }
 /**
@@ -143,32 +143,17 @@ const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[],
  */
 const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => {
 	if (!target.option) return
-	let hint = ''
+	const hint = []
+	console.log(target.option)
+	console.log(target.skus, target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden))
 
-	if (target.skus.length === 0) {
-		hint = '本选项未设置相应产品'
-		return Object.assign(target.option, { disabled: true, hint })
-	}
+	if (target.skus.length === 0) hint.push('本选项未设置相应产品')
+	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Down)) hint.push('本选项下所有商品已下架')
+	if (target.skus.every(sku => sku.stock <= 0)) hint.push('本选项下所有商品已售罄')
+	if (target.skus.every(sku => sku.stock < sku.threshold)) hint.push('本选项下所有商品库存告急')
+	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden)) hint.push('本选项下所有商品均为非卖品，仅供展示')
 
-	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Down)) {
-		hint = '商品已下架'
-		return Object.assign(target.option, { disabled: true, hint })
-	}
-
-	if (target.skus.every(sku => sku.stock <= 0)) {
-		hint = '已售罄'
-		return Object.assign(target.option, { disabled: true, hint })
-	}
-
-	if (target.skus.every(sku => sku.stock < sku.threshold)) {
-		hint = '库存告急'
-		return Object.assign(target.option, { disabled: true, hint })
-	}
-
-	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden)) {
-		hint = '非卖品，仅供展示'
-		return Object.assign(target.option, { disabled: true, hint })
-	}
+	return Object.assign(target.option, { disabled: hint.length > 0, hint })
 }
 
 /**

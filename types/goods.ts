@@ -16,7 +16,7 @@ export interface ISpec {
 
 export interface ISpecOption extends ISpec {
 	disabled?: boolean
-	hint?: string
+	hint?: string[]
 }
 
 export interface EditableISpec extends ISpec {
