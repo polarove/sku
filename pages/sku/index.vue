@@ -131,26 +131,38 @@ const handleAddLabel = () => {
 }
 
 const handleRemoveLabel = (label: ISpec) => {
-	const removeLabel = async () => {
+	const removeLabel = async (target: ISpec) => {
 		console.log('remove label')
-		specs.value = specs.value?.filter(spec => spec !== label && spec.parentId !== label.id) as (ISpec[] | null)
+		const temp = specs.value?.filter(spec => spec !== target && spec.parentId !== target.id)
+		return Promise.resolve(temp)
+	}
+	const assign = (survivors: ISpec[] | undefined) => {
+		if (!survivors) return Promise.reject(`无法删除标签：${label.label}`)
+		specs.value = survivors
 		return Promise.resolve()
 	}
-	removeLabel().then(generateSkus)
+
+	removeLabel(label).then(assign).then(generateSkus)
 }
 
 const handleRemoveSpecs = async (spec: ISpec) => {
-	const removeSpecs = async (label: ISpec) => {
-		specs.value?.splice(specs.value.indexOf(label), 1)
-		return Promise.resolve(label.id)
-	}
-	const removeSubSpecs = async (labelId: number) => {
-		const subSpecs = specs.value?.filter(spec => spec.parentId === labelId) ?? []
-		Promise.all(subSpecs.map(removeSpecs))
-		return labelId
+	const removeSpecs = async (target: ISpec) => {
+		specs.value?.splice(specs.value.indexOf(target), 1)
+		if (!target.parentId) return Promise.reject(`无法删除该选项，因为它不属于任何 Label：${target.label} => parentId为空`)
+		return Promise.resolve(target.parentId)
 	}
 
-	removeSpecs(spec).then(removeSubSpecs).then(generateSkus)
+	const shouldRemoveLabel = (parentId: number) => {
+		const ally = specs.value?.filter(spec => spec.parentId === parentId)
+		const label = specs.value?.find(spec => spec.id === parentId)
+		if (ally && ally.length <= 0 && label) return Promise.resolve(label)
+		return Promise.reject('无需删除')
+	}
+
+	removeSpecs(spec)
+		.then(shouldRemoveLabel)
+		.then(label => specs.value?.splice(specs.value.indexOf(label), 1))
+		.catch(err => ElMessage.warning(err))
 }
 
 const reviewSku = (sku: ISku) => {
