@@ -272,7 +272,11 @@ const clearSpecs = () => {
 	}
 }
 
-const handleComplete = (sku: ISku, specIds: number[]) => {
+const handleComplete = (sku: ISku | undefined, specIds: number[]) => {
+	if (!sku) {
+		ElMessage.error(`未找到与选项 ${specIds} 相关的商品 sku`)
+		return
+	}
 	const label = sku.labels.join(' - ')
 	ElMessage.success(`用户已选完可选项，所选商品 sku 为 ${label} | sepcIds: ${specIds}`)
 }
