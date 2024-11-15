@@ -53,13 +53,14 @@ const selections = reactive<number[]>([])
 
 const labels = computed(() => props.specs?.filter(spec => spec.parentId == null))
 
+declare type OptionId = number
 /**
  * @description 对选择进行验证
  * @param depth 深度
  * @param labelId 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param offset 元素在数组中的位置，即偏移量
  */
-const validateSelection = (depth: number, labelId: number, offset: number | undefined) => {
+const validateSelection = async (depth: number, labelId: number, offset: number | undefined): Promise<OptionId> => {
 	const row = depth + 1
 	if (!props.specs) return Promise.reject('没有可选项，无法选择')
 	if (!props.specs.find(spec => spec.parentId != null)) return Promise.reject('可选项为空，无法选择')
@@ -71,12 +72,13 @@ const validateSelection = (depth: number, labelId: number, offset: number | unde
 	return Promise.resolve(option.id)
 }
 
+declare type NextDepth = number
 /**
  * @description 将选项添加到 selections 数组中
  * @param depth 深度，当前选择的层数，用来判断是新增选择还是删除已选项
  * @param offset 偏移量
  */
-const select = (depth: number, id: number): number => {
+const select = async (depth: number, id: number): Promise<NextDepth> => {
 	if (depth < selections.length) {
 		if (selections[depth] === id) {
 			selections.splice(depth)
@@ -87,13 +89,13 @@ const select = (depth: number, id: number): number => {
 		}
 	}
 	else selections.splice(depth, 0, id)
-	return depth + 1
+	return Promise.resolve(depth + 1)
 }
 
 /**
- * @description 更新下一层选项的可选状态
+ * @description 根据给定规则校验下一层的可选状态
  */
-const updateOptionState = (nextDepth: number) => {
+const validateDepth = (nextDepth: number) => {
 	console.log('next depth', nextDepth)
 }
 
@@ -106,7 +108,7 @@ const updateOptionState = (nextDepth: number) => {
 const wrapSelect = (depth: number, label: ISpec, option: ISpec) => {
 	validateSelection(depth, label.id, props.specs?.indexOf(option))
 		.then(offset => select(depth, offset))
-		.then(nextDepth => updateOptionState(nextDepth))
+		.then(nextDepth => validateDepth(nextDepth))
 		.catch(err => ElMessage.warning(err))
 }
 
