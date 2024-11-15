@@ -175,8 +175,6 @@ const handleSelect = (depth: number, label: ISpec | undefined, option: ISpec | u
 		.catch(err => emits('on-error', err))
 }
 
-handleSelect(0, labels.value?.shift(), options.value?.shift())
-
 const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
 const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
 const productPrice = computed(() => product.value ? `￥${product.value.price.toFixed(2)}` : '等待选择')
@@ -186,4 +184,7 @@ const productGeneralPrice = computed(() => product.value
 		? `￥${product.value.generalPrice.toFixed(2)}`
 		: `￥${product.value.price.toFixed(2)}`
 	: '等待选择')
+
+const initialSelect = () => handleSelect(0, labels.value?.[0], options.value?.[0])
+onMounted(initialSelect)
 </script>

@@ -280,6 +280,8 @@ const handleAddDefaultSpecs = () => {
 	addDefaultSpecs().then(assemble).then(generateSkus)
 }
 
+handleAddDefaultSpecs()
+
 const handleClearSpecs = () => {
 	const clearSpecs = () => {
 		if (specs.value && specs.value.length > 0) {
