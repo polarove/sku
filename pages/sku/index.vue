@@ -204,6 +204,7 @@ const getRandomEnumValueByKey = <T extends object>(enumObj: T): T[keyof T] => {
  */
 const generateSkus = async () => {
 	const validate = (groups: OptionGroups) => Object.values(groups)
+
 	/**
  	* @description 获取所有组合
  	* @param products 商品规格
