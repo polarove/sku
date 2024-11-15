@@ -12,10 +12,10 @@
 			align="center"
 		>
 			<template #default="scope">
-				<el-button @click="$emit('reviewSku', scope.row)">
+				<el-button @click="$emit('review-sku', scope.row)">
 					修改
 				</el-button>
-				<el-button @click="$emit('removeSku', scope.row)">
+				<el-button @click="$emit('remove-sku', scope.row)">
 					删除
 				</el-button>
 			</template>
@@ -45,6 +45,9 @@
 import type { IPage, ISku } from '~/types/goods'
 
 const props = defineProps<{ skus: ISku[] | null }>()
+defineEmits<{
+	(e: 'review-sku' | 'remove-sku', row: ISku): void
+}>()
 
 const pageState = reactive({
 	pageNo: 1,
@@ -59,10 +62,6 @@ const page = computed(() => ({
 const handlePageChange = (pageNo: number) => {
 	pageState.pageNo = pageNo
 }
-
-defineEmits<{
-	(e: 'reviewSku' | 'removeSku', row: ISku): void
-}>()
 
 const columns = [
 	{

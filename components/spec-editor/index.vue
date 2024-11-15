@@ -8,7 +8,7 @@
 			<el-tag
 				closable
 				size="large"
-				@close="$emit('removeLabel', parent)"
+				@close="$emit('remove-label', parent)"
 			>
 				{{ parent.label }}
 			</el-tag>
@@ -21,7 +21,7 @@
 				size="large"
 				effect="plain"
 				round
-				@close="$emit('removeSpec', child)"
+				@close="$emit('remove-spec', child)"
 			>
 				{{ child.label }}
 			</el-tag>
@@ -46,21 +46,21 @@
 			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
 			style="height: 48px;"
 			type="primary"
-			@click="$emit('addLabel')"
+			@click="$emit('add-label')"
 		>
 			<span class="i-mdi:plus color-white text-3xl" />新增标签
 		</el-button>
 		<el-button
 			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
 			style="height: 48px;"
-			@click="$emit('clearSpecs')"
+			@click="$emit('clear-specs')"
 		>
 			清空选项
 		</el-button>
 		<el-button
 			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
 			style="height: 48px;"
-			@click="$emit('addDefaultSpecs')"
+			@click="$emit('add-default-specs')"
 		>
 			添加默认标签与选项
 		</el-button>
@@ -73,13 +73,13 @@ import type { EditableISpec, ISpec } from '~/types/goods'
 defineProps<{ specs: EditableISpec[] | null }>()
 
 const emit = defineEmits<{
-	(e: 'removeSpec' | 'removeLabel', tag: ISpec): void
-	(e: 'addSpec', tag: { label: string, parentId: number }): void
-	(e: 'addLabel' | 'addDefaultSpecs' | 'clearSpecs'): void
+	(e: 'remove-spec' | 'remove-label', tag: ISpec): void
+	(e: 'add-spec', tag: { label: string, parentId: number }): void
+	(e: 'add-label' | 'add-default-specs' | 'clear-specs'): void
 }>()
 const handleInputConfirm = (parent: EditableISpec) => {
 	if (parent.inputValue) {
-		emit('addSpec', { label: parent.inputValue, parentId: parent.id })
+		emit('add-spec', { label: parent.inputValue, parentId: parent.id })
 	}
 	delete parent.inputValue
 	delete parent.inputVisible

@@ -7,6 +7,7 @@
 			<sku-selector
 				:specs="specs"
 				:skus="skus"
+				@on-complete="(sku, specIds) => handleComplete(sku, specIds)"
 			/>
 		</section>
 		<section class="w-50vw px-12">
@@ -269,5 +270,10 @@ const clearSpecs = () => {
 	if (specs.value && specs.value.length > 0) {
 		specs.value = []
 	}
+}
+
+const handleComplete = (sku: ISku, specIds: number[]) => {
+	const label = sku.labels.join(' - ')
+	ElMessage.success(`用户已选完可选项，所选商品 sku 为 ${label} | sepcIds: ${specIds}`)
 }
 </script>
