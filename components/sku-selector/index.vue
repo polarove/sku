@@ -145,9 +145,6 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
 	if (!target.option) return
 	let hint = ''
 
-	/**
-	 * @description 该选项组合下没有任何可售卖的商品sku
-	 */
 	if (target.skus.length === 0) {
 		hint = '本选项未设置相应产品'
 		return Object.assign(target.option, { disabled: true, hint })
@@ -158,8 +155,8 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
 		return Object.assign(target.option, { disabled: true, hint })
 	}
 
-	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden)) {
-		hint = '非卖品，仅供展示'
+	if (target.skus.every(sku => sku.stock <= 0)) {
+		hint = '已售罄'
 		return Object.assign(target.option, { disabled: true, hint })
 	}
 
@@ -168,8 +165,8 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
 		return Object.assign(target.option, { disabled: true, hint })
 	}
 
-	if (target.skus.every(sku => sku.stock <= 0)) {
-		hint = '已售罄'
+	if (target.skus.every(sku => sku.status === EnumShopGoodsStatus.Hidden)) {
+		hint = '非卖品，仅供展示'
 		return Object.assign(target.option, { disabled: true, hint })
 	}
 }
