@@ -22,6 +22,7 @@
 			<el-tabs
 				tab-position="top"
 				style="--el-font-size-base: 20px; --el-border-color-light: var(--bg-color)"
+				@tab-change="handleTabChange"
 			>
 				<el-tab-pane
 					label="编辑选项"
@@ -71,6 +72,7 @@
 </template>
 
 <script lang='ts' setup>
+import type { TabPaneName } from 'element-plus'
 import { type ISku, type ISpec, type EditableISpec, EnumShopGoodsStatus } from '~/types/goods'
 
 const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
@@ -142,12 +144,22 @@ const handleRemoveSpecs = async (spec: ISpec) => {
 		const ally = specs.value?.filter(spec => spec.parentId === parentId)
 		const label = specs.value?.find(spec => spec.id === parentId)
 		if (ally && ally.length <= 0 && label) return Promise.resolve(label)
-		return Promise.reject('无需删除')
+		return Promise.resolve(undefined)
+	}
+
+	const tryToRemoveLabel = (label: ISpec | undefined): Promise<string | null> => {
+		if (!specs.value) return Promise.reject('[tryToRemoveLabel]：可选项为空，无法执行删除操作')
+		if (label) {
+			specs.value.splice(specs.value.indexOf(label), 1)
+			return Promise.resolve(`[tryToRemoveLabel]：由于该Label下已无子选项，移除Label | ${label.label}`)
+		}
+		return Promise.resolve(null)
 	}
 
 	removeSpecs(spec)
 		.then(shouldRemoveLabel)
-		.then(label => specs.value?.splice(specs.value.indexOf(label), 1))
+		.then(tryToRemoveLabel)
+		.then(msg => msg && ElMessage.success(msg))
 		.catch(err => ElMessage.warning(err))
 }
 
@@ -298,7 +310,11 @@ const handleAddDefaultSpecs = async () => {
 		return Promise.resolve(labels)
 	}
 	const assemble = (labels: ISpec[]) => specs.value = labels
-	addDefaultSpecs().then(assemble).then(generateSkus)
+
+	addDefaultSpecs()
+		.then(assemble)
+		.then(generateSkus)
+		.catch(err => ElMessage.warning(err))
 }
 
 handleAddDefaultSpecs()
@@ -320,5 +336,16 @@ const handleMistake = (err?: string[]) => {
 
 const handleError = (err?: string) => {
 	ElMessage.warning(err ?? '错误的选择')
+}
+
+const handleTabChange = (tab: TabPaneName) => {
+	tab = parseInt(tab.toString())
+	switch (tab) {
+		case 1: generateSkus()
+			break
+		case 3: generateSkus()
+			break
+		default: break
+	}
 }
 </script>
