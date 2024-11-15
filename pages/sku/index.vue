@@ -1,9 +1,6 @@
 <template>
 	<div class="flex">
-		<el-card
-			shadow="never"
-			class="w-50vw px-12"
-		>
+		<section class="w-50vw px-12">
 			<h1 class="text-center">
 				Sku 选择器
 			</h1>
@@ -13,8 +10,11 @@
 				@on-mistake="(err?: string[]) => handleMistake(err)"
 				@on-error="(err?: string) => handleError(err)"
 			/>
-		</el-card>
-		<section class="w-50vw px-12">
+		</section>
+		<el-card
+			class="w-50vw h-100vh"
+			shadow="never"
+		>
 			<el-tabs
 				tab-position="top"
 				style="--el-font-size-base: 16px; --el-border-color-light: var(--bg-color)"
@@ -78,7 +78,7 @@
 					<el-empty v-else />
 				</el-tab-pane>
 			</el-tabs>
-		</section>
+		</el-card>
 		<el-dialog v-model="skuReviewState.visible">
 			<template #header>
 				{{ skuReviewState.data?.title }}
