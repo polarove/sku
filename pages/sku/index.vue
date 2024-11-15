@@ -26,7 +26,7 @@
 						:specs="(specs as EditableISpec[])"
 						@add-label="handleAddLabel"
 						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => handleAddSpec(tag)"
-						@remove-label="(label) => handleRemoveLabel(label)"
+						@remove-label="(label: ISpec) => handleRemoveLabel(label)"
 						@remove-spec="(spec: ISpec) => handleRemoveSpecs(spec)"
 						@add-default-specs="handleAddDefaultSpecs"
 						@clear-specs="handleClearSpecs"
@@ -47,35 +47,13 @@
 					label="查看选项"
 				>
 					<h1>选项</h1>
-					<el-scrollbar
-						v-if="specs && specs.length > 0"
-						max-height="75vh"
-					>
-						<p
-							v-for="(spec, index) of specs"
-							:key="index"
-						>
-							{{ spec }}
-						</p>
-					</el-scrollbar>
-					<el-empty v-else />
+					<spec-inspector :specs="specs" />
 				</el-tab-pane>
 				<el-tab-pane
 					label="查看 Skus"
 				>
 					<h1>Skus</h1>
-					<el-scrollbar
-						v-if="skus && skus.length > 0"
-						max-height="85vh"
-					>
-						<p
-							v-for="(sku, index) of skus"
-							:key="index"
-						>
-							{{ sku }}
-						</p>
-					</el-scrollbar>
-					<el-empty v-else />
+					<sku-inspector :skus="skus" />
 				</el-tab-pane>
 			</el-tabs>
 		</el-card>
