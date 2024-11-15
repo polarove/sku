@@ -161,80 +161,100 @@ const removeSku = (sku: ISku) => {
 	skus.value?.splice(skus.value.indexOf(sku), 1)
 }
 
-/**
- * @description 获取所有组合
- * @param products 商品规格
- */
-const bfs = (products: ISpec[][] | null): ISpec[][] => {
-	if (!products) return []
-	let queue: ISpec[][] = [[]]
-
-	for (const productOptions of products) {
-		const newQueue: ISpec[][] = []
-		while (queue.length > 0) {
-			const currentCombination = queue.shift()
-
-			for (const option of productOptions) {
-				const newCombination = [...currentCombination ?? [], option]
-				newQueue.push(newCombination)
-			}
-		}
-
-		queue = newQueue
-	}
-
-	return queue
-}
+declare type OptionGroups = { [key: number]: ISpec[] }
 
 /**
- * @description 将商品按 ParentId 分组，方便后续更新可选状态
- */
-const groupByParentId = (items: ISpec[] | null): ISpec[][] | null => {
-	if (!items) return []
-	const groupedItems = items.reduce((acc, item) => {
+* @description 将商品按 ParentId 分组，方便后续更新可选状态
+*/
+const groupByParentId = async (items: ISpec[] | null): Promise<OptionGroups> => {
+	if (!items) return Promise.reject('[groupByParentId]: 在按照parentId对数组进行整理时，传入的数组为空')
+	if (items.length === 0) return Promise.reject('[groupByParentId]: 在按照parentId对数组进行整理时，传入的数组为空')
+
+	const process = (acc: OptionGroups, item: ISpec) => {
 		const parentId = item.parentId || 0 // 使用 0 作为默认分组
 		if (!acc[parentId]) {
 			acc[parentId] = []
 		}
 		acc[parentId].push(item)
 		return acc
-	}, {} as { [key: number]: ISpec[] })
+	}
 
-	return Object.keys(groupedItems).length <= 0 ? null : Object.values(groupedItems)
+	const groupedItems = items.reduce((acc, item) => process(acc, item), {} as OptionGroups)
+	return Promise.resolve(groupedItems)
+}
+
+/**
+ * @description 生成随机数
+ * @param multiplier 倍率
+ */
+const randomNumber = (multiplier: number): number => Math.random() * multiplier
+
+/**
+ * @description 从枚举类中获取随机的值
+ * @param enumObj 枚举类
+ */
+const getRandomEnumValueByKey = <T extends object>(enumObj: T): T[keyof T] => {
+	const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)))
+	const randomKey = enumKeys[Math.floor(Math.random() * enumKeys.length)] as keyof T
+	return enumObj[randomKey]
 }
 
 /**
  * @description 生成所有组合
  */
 const generateSkus = async () => {
-	console.log('生成sku')
+	const validate = (groups: OptionGroups) => Object.values(groups)
+	/**
+ 	* @description 获取所有组合
+ 	* @param products 商品规格
+ 	*/
+	const bfs = async (products: ISpec[][] | null): Promise<ISpec[][]> => {
+		if (!products) return Promise.reject('[bfs]: 产品为空')
+		let queue: ISpec[][] = [[]]
+		for (const productOptions of products) {
+			const newQueue: ISpec[][] = []
+			while (queue.length > 0) {
+				const currentCombination = queue.shift()
 
-	const groupedItems = groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
-	function getRandomEnumValueByKey<T extends object>(enumObj: T): T[keyof T] {
-		const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)))
-		const randomKey = enumKeys[Math.floor(Math.random() * enumKeys.length)] as keyof T
-		return enumObj[randomKey]
+				for (const option of productOptions) {
+					const newCombination = [...currentCombination ?? [], option]
+					newQueue.push(newCombination)
+				}
+			}
+
+			queue = newQueue
+		}
+
+		return Promise.resolve(queue)
 	}
-	const assemble = (specGroup: ISpec[], index: number) => {
-		return {
+
+	const assemble = async (combinations: ISpec[][]) => {
+		const skus = combinations.map((group, index) => ({
 			id: index,
-			labels: specGroup.map(sku => sku.label),
-			specIds: specGroup.map(sku => sku.id),
+			labels: group.map(sku => sku.label),
+			specIds: group.map(sku => sku.id),
 			generalPrice: 1000 * Math.random(),
-			price: 1000 * Math.random() / 2,
-			favorites: 1000 * Math.random(),
-			sales: 1000 * Math.random(),
-			shares: 1000 * Math.random(),
-			isShowSales: index * Math.random() * 10 % 2 == 1,
-			weight: 100 * Math.random(),
+			price: randomNumber(1000) / 2,
+			favorites: randomNumber(1000),
+			sales: randomNumber(1000),
+			shares: randomNumber(1000),
+			isShowSales: index * randomNumber(10) % 2 == 1,
+			weight: randomNumber(100),
 			status: getRandomEnumValueByKey(EnumShopGoodsStatus),
-			stock: 1000 * Math.random(),
-			threshold: 100 * Math.random() / 2,
+			stock: randomNumber(1000),
+			threshold: randomNumber(100) / 2,
 			title: '测试标题',
 			carousels: []
-		} as ISku
+		}))
+		return Promise.resolve(skus)
 	}
-	skus.value = bfs(groupedItems).map((specGroup, index) => assemble(specGroup, index))
+
+	groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
+		.then(validate)
+		.then(bfs)
+		.then(assemble)
+		.then(res => skus.value = res)
+		.catch(err => console.info(err))
 }
 
 const clearSku = () => {
@@ -244,7 +264,7 @@ const clearSku = () => {
 /**
  * @description 生成默认规格
  */
-const handleAddDefaultSpecs = () => {
+const handleAddDefaultSpecs = async () => {
 	/**
  	* @description 生成默认规格
  	*/
