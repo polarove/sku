@@ -21,8 +21,8 @@
 					<spec-editor
 						:specs="(specs as EditableISpec[])"
 						@add-label="handleAddLabel"
-						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => addSpec(tag)"
-						@remove-label="(label) => removeLabel(label)"
+						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => handleAddSpec(tag)"
+						@remove-label="(label) => handleRemoveLabel(label)"
 						@remove-spec="(spec: ISpec) => handleRemoveSpecs(spec)"
 						@add-default-specs="handleAddDefaultSpecs"
 						@clear-specs="handleClearSpecs"
@@ -95,16 +95,20 @@ const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
 const { data: specs } = await useFetch<ISpec[] | null>('/api/specs/0-0')
 const { data: skus } = await useFetch<ISku[] | null>('/api/skus/0-0')
 
-const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
-	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
-	specs.value?.push({
-		id: currentId++,
-		label: tag.label,
-		parentId: tag.parentId,
-		sort: 1
-	})
-	generateSkus()
-	return tag.label
+const handleAddSpec = async (tag: Pick<ISpec, 'label' | 'parentId'>) => {
+	const calculateId = async () => {
+		let id = 0
+		if (specs.value && specs.value.length > 0) {
+			id = Math.max(...specs.value.map(spec => spec.id)) + 1
+		}
+		return Promise.resolve(id)
+	}
+	const assemble = (nextId: number) => Promise.resolve({ id: nextId, ...tag, sort: 1 })
+	const addSpec = async (spec: ISpec) => {
+		specs.value?.push(spec)
+		return Promise.resolve(spec.label)
+	}
+	return calculateId().then(assemble).then(addSpec).then(label => label)
 }
 
 const handleAddLabel = () => {
@@ -121,15 +125,18 @@ const handleAddLabel = () => {
 
 	ElMessageBox
 		.prompt(`输入${name}`, '提示', buildPrompt(name))
-		.then(({ value }) => addSpec({ label: value, parentId: undefined }))
+		.then(({ value }) => handleAddSpec({ label: value, parentId: undefined }))
 		.then(label => ElMessage({ type: 'success', message: `添加了一个标签: ${label}` }))
 		.catch(() => ElMessage({ type: 'warning', message: '取消' }))
 }
 
-const removeLabel = (label: ISpec) => {
-	console.log('remove label')
-	specs.value = specs.value?.filter(spec => spec !== label && spec.parentId !== label.id) as (ISpec[] | null)
-	generateSkus()
+const handleRemoveLabel = (label: ISpec) => {
+	const removeLabel = async () => {
+		console.log('remove label')
+		specs.value = specs.value?.filter(spec => spec !== label && spec.parentId !== label.id) as (ISpec[] | null)
+		return Promise.resolve()
+	}
+	removeLabel().then(generateSkus)
 }
 
 const handleRemoveSpecs = async (spec: ISpec) => {
