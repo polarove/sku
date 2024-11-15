@@ -190,6 +190,9 @@ const groupByParentId = (items: ISpec[] | null): ISpec[][] | null => {
 	return Object.keys(groupedItems).length <= 0 ? null : Object.values(groupedItems)
 }
 
+/**
+ * @description 生成所有组合
+ */
 const generateSkus = async () => {
 	console.log('生成sku')
 
@@ -221,6 +224,9 @@ const generateSkus = async () => {
 	skus.value = bfs(groupedItems).map((specGroup, index) => assemble(specGroup, index))
 }
 
+/**
+ * @description 生成默认规格
+ */
 const addDefaultSpecs = (): Promise<ISpec[]> => {
 	const labels: ISpec[] = [
 		{ id: 1, label: '品种', sort: 1 },
@@ -250,6 +256,9 @@ const addDefaultSpecs = (): Promise<ISpec[]> => {
 	return Promise.resolve(labels)
 }
 
+/**
+ * @description 生成默认规格
+ */
 const handleAddDefaultSpecs = () => {
 	addDefaultSpecs().then(labels => specs.value = labels)
 }
