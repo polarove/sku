@@ -1,5 +1,5 @@
 <template>
-	<div class="flex">
+	<div class="flex h-100vh">
 		<section class="w-50vw p-20px">
 			<el-tabs style="--el-font-size-base: 20px;">
 				<el-tab-pane label="sku 选择器">
@@ -16,7 +16,7 @@
 			</el-tabs>
 		</section>
 		<el-card
-			class="w-50vw h-100vh"
+			class="w-50vw"
 			shadow="never"
 		>
 			<el-tabs
