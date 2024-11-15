@@ -71,7 +71,8 @@ declare type NextDepth = number
  * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param option 元素在数组中的位置，即偏移量
  */
-const validateSelection = async (depth: Depth, label: ISpec | undefined, option: ISpecOption | undefined): Promise<OptionId> => {
+const validateSelection = async (depth: Depth, label: ISpec | undefined, option: ISpecOption | undefined): Promise<{ iLabel: ISpec, iOption: ISpec }> => {
+	if (depth < 0) return Promise.reject('选择层数怎么可能是负数呢')
 	const row = depth + 1
 	if (!label) return Promise.reject('没有可选项，无法选择')
 	if (!option) return Promise.reject('没有可选项，无法选择')
@@ -82,14 +83,27 @@ const validateSelection = async (depth: Depth, label: ISpec | undefined, option:
 	if (option.parentId !== label.id) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
 	if (option.disabled) emits('on-mistake', option.hint)
-	return Promise.resolve(option.id)
+	return Promise.resolve({ iLabel: label, iOption: option })
 }
+
+/**
+ * @description 处理第一层的可选状态
+ * @param depth 深度，应当为0，不为零直接返回 optionId
+ * @param label 标签
+ * @param optionId 选项id
+ */
+const preprocessFirstDepth = (depth: number, label: ISpec, optionId: number) => {
+	if (depth > 0) return Promise.resolve(optionId)
+
+	return Promise.resolve(optionId)
+}
+
 /**
  * @description 将选项添加到 selections 数组中
  * @param depth 深度，当前选择的层数，用来判断是新增选择还是删除已选项
  * @param id 选项id
  */
-const select = async (depth: Depth, id: OptionId): Promise<Depth> => {
+const select = async (depth: Depth, id: OptionId): Promise<void> => {
 	if (depth < selections.length) {
 		if (selections[depth] === id) {
 			selections.splice(depth)
@@ -100,7 +114,7 @@ const select = async (depth: Depth, id: OptionId): Promise<Depth> => {
 		}
 	}
 	else selections.splice(depth, 0, id)
-	return Promise.resolve(depth)
+	return Promise.resolve()
 }
 
 /**
@@ -167,8 +181,9 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
  */
 const handleSelect = (depth: number, label: ISpec | undefined, option: ISpec | undefined) => {
 	validateSelection(depth, label, option)
+		.then(({ iLabel, iOption }) => preprocessFirstDepth(depth, iLabel, iOption.id))
 		.then(offset => select(depth, offset))
-		.then(depth => filterSkuCandidates(depth))
+		.then(() => filterSkuCandidates(depth))
 		.then(({ candidates, nextDepth }) => mapOptionIdsAroundNextDepth(candidates, nextDepth))
 		.then(({ candidates, optionIds, depth }) => mapSkusAroundNextDepth(optionIds, candidates, depth))
 		.then(skuUnderTheSelection => skuUnderTheSelection.forEach(validate))
