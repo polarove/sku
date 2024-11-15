@@ -68,8 +68,8 @@ declare type NextDepth = number
 /**
  * @description 对选择进行验证
  * @param depth 深度
- * @param labelId 你要在哪个label下进行选择，对该label下的选项进行验证
- * @param offset 元素在数组中的位置，即偏移量
+ * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
+ * @param option 元素在数组中的位置，即偏移量
  */
 const validateSelection = async (depth: Depth, label: ISpec | undefined, option: ISpecOption | undefined): Promise<OptionId> => {
 	const row = depth + 1
@@ -87,7 +87,7 @@ const validateSelection = async (depth: Depth, label: ISpec | undefined, option:
 /**
  * @description 将选项添加到 selections 数组中
  * @param depth 深度，当前选择的层数，用来判断是新增选择还是删除已选项
- * @param offset 偏移量
+ * @param id 选项id
  */
 const select = async (depth: Depth, id: OptionId): Promise<Depth> => {
 	if (depth < selections.length) {
@@ -105,7 +105,7 @@ const select = async (depth: Depth, id: OptionId): Promise<Depth> => {
 
 /**
  * @description 跟据已选项，找到所有可能的的产品 sku 候选
- * @param nextDepth
+ * @param depth 深度
  */
 const filterSkuCandidates = async (depth: Depth) => {
 	const nextDepth = depth + 1
@@ -116,8 +116,8 @@ const filterSkuCandidates = async (depth: Depth) => {
 
 /**
  * @description 获取optionIds下一层中，所有选项的id
- * @param skus 产品候选
- * @param nextDepth 下一层要选的 index 值
+ * @param candidates 产品候选
+ * @param depth 深度，已经 + 1
  */
 const mapOptionIdsAroundNextDepth = async (candidates: ISku[], depth: NextDepth) => {
 	const optionIds = Array.from(new Set(candidates.map(sku => sku.specIds[depth]).filter(id => id !== undefined)))
@@ -130,7 +130,7 @@ const mapOptionIdsAroundNextDepth = async (candidates: ISku[], depth: NextDepth)
  * @example return [{1,3}, {1,4}, {1,5}, {1,6}]
  * @param optionIds 下一层选项的id列表
  * @param candidates 产品候选
- * @param depth 下一层要处理的index值
+ * @param depth 深度，已经 + 1
  * @returns skuUnderTheSelection
  */
 const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[], depth: NextDepth) => {
@@ -162,8 +162,8 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
 /**
  * @description 选择包装器
  * @param depth 深度
- * @param labelId 你要在哪个label下进行选择，对该label下的选项进行验证
- * @param offset 选项在数组中的位置，即偏移量
+ * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
+ * @param option 点击的选项
  */
 const handleSelect = (depth: number, label: ISpec | undefined, option: ISpec | undefined) => {
 	validateSelection(depth, label, option)
