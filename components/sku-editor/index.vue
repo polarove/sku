@@ -30,15 +30,31 @@
 			class-name="h-100px"
 		/>
 	</el-table>
-	<el-pagination
-		layout="prev, pager, next"
-		:total="page.total"
-		:current-page="page.pageNo"
-		class="justify-center mt-4"
-		size="large"
-		:background="true"
-		@current-change="(e) => handlePageChange(e)"
-	/>
+	<div class="flex items-center justify-between mt-4">
+		<div>
+			<el-button
+				type="success"
+				@click="$emit('generate-sku')"
+			>
+				生成sku
+			</el-button>
+			<el-button
+				type="danger"
+				@click="$emit('clear-sku')"
+			>
+				清空
+			</el-button>
+		</div>
+		<el-pagination
+			layout="prev, pager, next"
+			:total="page.total"
+			:current-page="page.pageNo"
+
+			size="large"
+			:background="true"
+			@current-change="(e) => handlePageChange(e)"
+		/>
+	</div>
 </template>
 
 <script lang='ts' setup>
@@ -47,6 +63,7 @@ import type { IPage, ISku } from '~/types/goods'
 const props = defineProps<{ skus: ISku[] | null }>()
 defineEmits<{
 	(e: 'review-sku' | 'remove-sku', row: ISku): void
+	(e: 'clear-sku' | 'generate-sku'): void
 }>()
 
 const pageState = reactive({

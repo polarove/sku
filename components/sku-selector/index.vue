@@ -12,12 +12,12 @@
 			<div
 				v-for="(child, subIndex) in specs.filter(spec => spec.parentId === parent.id)"
 				:key="subIndex"
-				class="inline-block mr-4 text-2xl"
+				class="inline-block mr-4 text-2xl cursor-pointer"
 				:class="[
-					selections.includes(child.id) ? 'color-blue' : '',
-					selections.length < depth ? 'color-gray cursor-not-allowed' : 'hover:color-blue cursor-pointer'
+					selections.includes(child.id) ? child.disabled ? 'color-red' : 'color-blue' : '',
+					(selections.length < depth || child.disabled) ? 'color-gray' : 'hover:color-blue'
 				]"
-				@click="wrapSelect(depth, parent, child)"
+				@click="handleSelect(depth, parent, child)"
 			>
 				{{ child.label }}
 			</div>
@@ -39,17 +39,21 @@
 				<span class="text-2xl">优惠价</span>
 				<span class="text-2xl color-red">{{ productPrice }}</span>
 			</div>
+			<div class="flex justify-between my-4">
+				<span class="text-2xl">仅剩</span>
+				<span class="text-2xl color-red">{{ productStock }}</span>
+			</div>
 		</div>
 	</div>
 	<el-empty v-else />
 </template>
 
 <script lang='ts' setup>
-import type { ISku, ISpec } from '~/types/goods'
+import { EnumShopGoodsStatus, type ISku, type ISpec, type ISpecOption } from '~/types/goods'
 
-const props = defineProps<{ specs: ISpec[] | null, skus: ISku[] | null }>()
+const props = defineProps<{ specs: ISpecOption[] | null, skus: ISku[] | null }>()
 const emits = defineEmits<{
-	(e: 'on-complete', sku: ISku | undefined, specIds: OptionId[]): void
+	(e: 'on-mistake', err?: string): void
 }>()
 const selections = reactive<number[]>([])
 
@@ -76,6 +80,7 @@ const validateSelection = async (depth: Depth, labelId: LabelId, offset: SpecId 
 	if (!option) return Promise.reject(`选项不存在：第 ${row} 行第 ${offset} 个`)
 	if (option.parentId !== labelId) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
+	if (option.disabled) emits('on-mistake', option.hint)
 	return Promise.resolve(option.id)
 }
 /**
@@ -83,7 +88,7 @@ const validateSelection = async (depth: Depth, labelId: LabelId, offset: SpecId 
  * @param depth 深度，当前选择的层数，用来判断是新增选择还是删除已选项
  * @param offset 偏移量
  */
-const select = async (depth: Depth, id: OptionId): Promise<NextDepth> => {
+const select = async (depth: Depth, id: OptionId): Promise<Depth> => {
 	if (depth < selections.length) {
 		if (selections[depth] === id) {
 			selections.splice(depth)
@@ -94,37 +99,63 @@ const select = async (depth: Depth, id: OptionId): Promise<NextDepth> => {
 		}
 	}
 	else selections.splice(depth, 0, id)
-	return Promise.resolve(depth + 1)
+	return Promise.resolve(depth)
 }
 
 /**
- * @description 找到对应的产品候选
+ * @description 跟据已选项，找到所有可能的的产品 sku 候选
  * @param nextDepth
  */
-const filterCandidates = (nextDepth: NextDepth) => {
-	console.log('next depth', nextDepth)
-	const candidate = props.skus?.filter(sku => selections.every((id, index) => sku.specIds.slice(0, selections.length)[index] === id))
-	if (candidate) return Promise.resolve({ skus: candidate, nextDepth })
+const filterSkuCandidates = async (depth: Depth) => {
+	const nextDepth = depth + 1
+	const candidates = props.skus?.filter(sku => selections.every((id, index) => sku.specIds.slice(0, nextDepth)[index] === id))
+	if (candidates) return Promise.resolve({ candidates, nextDepth })
 	return Promise.reject('没有找到对应的产品候选')
 }
 
 /**
- * @description 获取下一层中，所有选项的id
+ * @description 获取optionIds下一层中，所有选项的id
  * @param skus 产品候选
  * @param nextDepth 下一层要选的 index 值
  */
-const popOptionIdsAroundGivenDepth = (candidates: ISku[], nextDepth: NextDepth) => {
-	const optionIdsAroundDepth = Array.from(new Set(candidates.map(sku => sku.specIds[nextDepth]).filter(id => id !== undefined)))
-	console.log('获取下一层可选项的id', optionIdsAroundDepth)
-	if (optionIdsAroundDepth.length === 0) {
-		console.log('用户已经选完所有可选项')
-		emits('on-complete', product.value, selections)
-	}
-	return Promise.resolve(optionIdsAroundDepth)
+const mapOptionIdsAroundNextDepth = async (candidates: ISku[], depth: NextDepth) => {
+	const optionIds = Array.from(new Set(candidates.map(sku => sku.specIds[depth]).filter(id => id !== undefined)))
+	return Promise.resolve({ candidates, optionIds, depth })
 }
 
-const adfs = (optionIds: OptionId[]) => {
-	console.log(optionIds)
+/**
+ * @description 对下一层中每个id，找到对应的选项，以及该选项所对应的sku
+ * @example selections = [1], options = [3,4,5,6]
+ * @example return [{1,3}, {1,4}, {1,5}, {1,6}]
+ * @param optionIds 下一层选项的id列表
+ * @param candidates 产品候选
+ * @param depth 下一层要处理的index值
+ * @returns skuUnderTheSelection
+ */
+const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[], depth: NextDepth) => {
+	const skuUnderTheSelection = optionIds.map(id => ({ option: props.specs?.find(spec => spec.id === id), sku: candidates.find(sku => sku.specIds[depth] === id) }))
+	return Promise.resolve(skuUnderTheSelection)
+}
+
+/**
+ * @description 校验函数
+ * @param target 需要校验的选项
+ */
+const validate = async (target: { option: ISpec | undefined, sku: ISku | undefined }) => {
+	if (!target.option) return
+	let hint = ''
+	if (!target.sku) {
+		hint = '没有相应产品'
+		return Object.assign(target.option, { disabled: true, hint })
+	}
+	if (target.sku.status === EnumShopGoodsStatus.Down) {
+		hint = '商品已下架'
+		return Object.assign(target.option, { disabled: true, hint })
+	}
+	if (target.sku.stock < target.sku.threshold) {
+		hint = '库存告急'
+		return Object.assign(target.option, { disabled: true, hint })
+	}
 }
 
 /**
@@ -133,12 +164,13 @@ const adfs = (optionIds: OptionId[]) => {
  * @param labelId 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param offset 元素在数组中的位置，即偏移量
  */
-const wrapSelect = (depth: number, label: ISpec, option: ISpec) => {
+const handleSelect = (depth: number, label: ISpec, option: ISpec) => {
 	validateSelection(depth, label.id, props.specs?.indexOf(option))
 		.then(offset => select(depth, offset))
-		.then(nextDepth => filterCandidates(nextDepth))
-		.then(({ skus, nextDepth }) => popOptionIdsAroundGivenDepth(skus, nextDepth))
-		.then(optionIds => adfs(optionIds))
+		.then(depth => filterSkuCandidates(depth))
+		.then(({ candidates, nextDepth }) => mapOptionIdsAroundNextDepth(candidates, nextDepth))
+		.then(({ candidates, optionIds, depth }) => mapSkusAroundNextDepth(optionIds, candidates, depth))
+		.then(skuUnderTheSelection => skuUnderTheSelection.forEach(validate))
 		.catch(err => ElMessage.warning(err))
 }
 
@@ -146,4 +178,5 @@ const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, in
 const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
 const productGeneralPrice = computed(() => product.value ? product.value.generalPrice ? `￥${product.value.generalPrice.toFixed(2)}` : `￥${product.value.price.toFixed(2)}` : '等待选择')
 const productPrice = computed(() => product.value ? `￥${product.value.price.toFixed(2)}` : '等待选择')
+const productStock = computed(() => product.value ? `${product.value.stock}件` : '等待选择')
 </script>

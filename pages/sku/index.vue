@@ -7,7 +7,7 @@
 			<sku-selector
 				:specs="specs"
 				:skus="skus"
-				@on-complete="(sku, specIds) => handleComplete(sku, specIds)"
+				@on-disabled-option-clicked="(err?:string) => handleMistake(err)"
 			/>
 		</section>
 		<section class="w-50vw px-12">
@@ -35,6 +35,8 @@
 						:skus="skus"
 						@review-sku="(sku: ISku) => reviewSku(sku)"
 						@remove-sku="(sku: ISku) => removeSku(sku)"
+						@clear-sku="clearSku"
+						@generate-sku="generateSkus"
 					/>
 				</el-tab-pane>
 				<el-tab-pane
@@ -217,12 +219,16 @@ const generateSkus = async () => {
 			weight: 100 * Math.random(),
 			status: getRandomEnumValueByKey(EnumShopGoodsStatus),
 			stock: 1000 * Math.random(),
-			threshold: 1000 * Math.random(),
+			threshold: 100 * Math.random() / 2,
 			title: '测试标题',
 			carousels: []
 		} as ISku
 	}
 	skus.value = bfs(groupedItems).map((specGroup, index) => assemble(specGroup, index))
+}
+
+const clearSku = () => {
+	skus.value?.splice(0, skus.value.length)
 }
 
 /**
@@ -272,12 +278,7 @@ const clearSpecs = () => {
 	}
 }
 
-const handleComplete = (sku: ISku | undefined, specIds: number[]) => {
-	if (!sku) {
-		ElMessage.error(`未找到与选项 ${specIds} 相关的商品 sku`)
-		return
-	}
-	const label = sku.labels.join(' - ')
-	ElMessage.success(`用户已选完可选项，所选商品 sku 为 ${label} | sepcIds: ${specIds}`)
+const handleMistake = (err?: string) => {
+	ElMessage.error(err ?? '错误的选择')
 }
 </script>

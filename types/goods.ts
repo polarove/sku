@@ -14,6 +14,11 @@ export interface ISpec {
 	sort: number
 }
 
+export interface ISpecOption extends ISpec {
+	disabled?: boolean
+	hint?: string
+}
+
 export interface EditableISpec extends ISpec {
 	parentId: number
 	inputValue?: string
