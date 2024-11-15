@@ -7,7 +7,7 @@
 			<sku-selector
 				:specs="specs"
 				:skus="skus"
-				@on-disabled-option-clicked="(err?:string) => handleMistake(err)"
+				@on-mistake="(err?:string) => handleMistake(err)"
 			/>
 		</section>
 		<section class="w-50vw px-12">
