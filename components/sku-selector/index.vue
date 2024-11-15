@@ -19,22 +19,22 @@
 				]"
 				@click="wrapSelect(depth, parent, child)"
 			>
-				{{ child.label }}{{ child.id }}
+				{{ child.label }}
 			</div>
 		</section>
 		<el-divider />
 		<div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">已选商品</span>
-				<span class="text-2xl color-red">{{ product ? product.labels.join(' - ') : '等待选择' }}</span>
+				<span class="text-2xl color-red">{{ productName }}</span>
 			</div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">原价</span>
-				<span class="text-2xl color-red">已选商品</span>
+				<span class="text-2xl color-red">￥{{ productGeneralPrice }}</span>
 			</div>
 			<div class="flex justify-between my-4">
 				<span class="text-2xl">优惠价</span>
-				<span class="text-2xl color-red">已选商品</span>
+				<span class="text-2xl color-red">￥{{ productPrice }}</span>
 			</div>
 		</div>
 	</div>
@@ -113,4 +113,7 @@ const wrapSelect = (depth: number, label: ISpec, option: ISpec) => {
 }
 
 const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
+const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
+const productGeneralPrice = computed(() => product.value ? product.value.generalPrice ? product.value.generalPrice.toFixed(2) : product.value.price.toFixed(2) : '等待选择')
+const productPrice = computed(() => product.value ? product.value.price.toFixed(2) : '等待选择')
 </script>
