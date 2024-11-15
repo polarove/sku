@@ -24,7 +24,8 @@
 						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => addSpec(tag)"
 						@remove-label="(label) => removeLabel(label)"
 						@remove-spec="(spec: ISpec) => removeSpec(spec)"
-						@add-default-specs="generateDefaultSpecsAndSkus"
+						@add-default-specs="handleAddDefaultSpecs"
+						@clear-specs="clearSpecs"
 					/>
 				</el-tab-pane>
 				<el-tab-pane
@@ -90,7 +91,7 @@ const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
 })
 
 const { data: specs } = await useFetch<ISpec[]>('/api/specs/0-0')
-const { data: skus } = await useFetch<ISku[]>('/api/skus/0-0')
+const { data: skus } = await useFetch<ISku[] | null>('/api/skus/0-0')
 
 const addLabel = () => {
 	console.log('add label')
@@ -128,7 +129,6 @@ const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 	console.log('add spec', tag)
 	const handlePush = (tag: ISpec) => specs.value?.push(tag)
 	let currentId = specs.value && specs.value.length > 0 ? Math.max(...specs.value?.map(spec => spec.id) ?? [0]) + 1 : 0
-
 	handlePush({
 		id: currentId++,
 		label: tag.label,
@@ -136,10 +136,15 @@ const addSpec = (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 		sort: 1
 	})
 }
-
 const removeSpec = (spec: ISpec) => {
 	console.log('remove spec')
 	specs.value?.splice(specs.value.indexOf(spec), 1)
+	const label = specs.value?.find(label => label.id === spec.parentId)
+	if (label) {
+		const hasOption = specs.value?.some(option => option.parentId === label.id)
+		if (!hasOption) specs.value?.splice(specs.value.indexOf(label), 1)
+	}
+	skus.value?.filter(sku => sku.specIds.includes(spec.id)).forEach(sku => removeSku(sku))
 }
 
 const reviewSku = (sku: ISku) => {
@@ -190,7 +195,9 @@ const groupByParentId = (items: ISpec[] | null): ISpec[][] | null => {
 	return Object.keys(groupedItems).length <= 0 ? null : Object.values(groupedItems)
 }
 
-const generateSkus = () => {
+const generateSkus = async () => {
+	console.log('生成sku')
+
 	const groupedItems = groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
 	function getRandomEnumValueByKey<T extends object>(enumObj: T): T[keyof T] {
 		const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)))
@@ -248,7 +255,13 @@ const addDefaultSpecs = (): Promise<ISpec[]> => {
 	return Promise.resolve(labels)
 }
 
-const generateDefaultSpecsAndSkus = () => {
-	addDefaultSpecs().then(labels => specs.value = labels).then(() => generateSkus())
+const handleAddDefaultSpecs = () => {
+	addDefaultSpecs().then(labels => specs.value = labels)
+}
+
+watch(() => specs.value, () => generateSkus(), { deep: true })
+
+const clearSpecs = () => {
+	specs.value = []
 }
 </script>

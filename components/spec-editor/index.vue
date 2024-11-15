@@ -51,7 +51,14 @@
 			<span class="i-mdi:plus color-white text-3xl" />新增标签
 		</el-button>
 		<el-button
-			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center  flex-1 rounded-md"
+			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
+			style="height: 48px;"
+			@click="$emit('clearSpecs')"
+		>
+			清空选项
+		</el-button>
+		<el-button
+			class="outline-none bg-transparent hover:cursor-pointer flex items-center justify-center flex-1 rounded-md"
 			style="height: 48px;"
 			@click="$emit('addDefaultSpecs')"
 		>
@@ -68,7 +75,7 @@ defineProps<{ specs: EditableISpec[] | null }>()
 const emit = defineEmits<{
 	(e: 'removeSpec' | 'removeLabel', tag: ISpec): void
 	(e: 'addSpec', tag: { label: string, parentId: number }): void
-	(e: 'addLabel' | 'addDefaultSpecs'): void
+	(e: 'addLabel' | 'addDefaultSpecs' | 'clearSpecs'): void
 }>()
 const handleInputConfirm = (parent: EditableISpec) => {
 	if (parent.inputValue) {
