@@ -92,8 +92,8 @@ const validateSelection = async (depth: Depth, label: ISpec | undefined, option:
  * @param label 标签
  * @param optionId 选项id
  */
+// TODO: implement this method
 const preprocessFirstDepth = (depth: number, label: ISpec, optionId: number) => {
-	// TODO: implement this method
 	if (depth > 0) return Promise.resolve(optionId)
 
 	return Promise.resolve(optionId)
