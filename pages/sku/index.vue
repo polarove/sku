@@ -13,7 +13,6 @@
 			<el-tabs
 				tab-position="top"
 				style="--el-font-size-base: 16px; --el-border-color-light: var(--bg-color)"
-				@tab-change="generateSkus"
 			>
 				<el-tab-pane
 					label="编辑选项"
@@ -262,6 +261,8 @@ const handleAddDefaultSpecs = () => {
 watch(() => specs.value, () => generateSkus(), { deep: true })
 
 const clearSpecs = () => {
-	specs.value = []
+	if (specs.value && specs.value.length > 0) {
+		specs.value = []
+	}
 }
 </script>
