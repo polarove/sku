@@ -13,7 +13,7 @@
 			<el-tabs
 				tab-position="top"
 				style="--el-font-size-base: 16px; --el-border-color-light: var(--bg-color)"
-				@tab-change="handleTabChange"
+				@tab-change="generateSkus"
 			>
 				<el-tab-pane
 					label="编辑选项"
@@ -24,7 +24,7 @@
 						@add-spec="(tag: Pick<ISpec, 'label' | 'parentId'>) => addSpec(tag)"
 						@remove-label="(label) => removeLabel(label)"
 						@remove-spec="(spec: ISpec) => removeSpec(spec)"
-						@add-default-specs="addDefaultSpecs"
+						@add-default-specs="generateDefaultSpecsAndSkus"
 					/>
 				</el-tab-pane>
 				<el-tab-pane
@@ -82,7 +82,6 @@
 </template>
 
 <script lang='ts' setup>
-import type { TabPaneName } from 'element-plus'
 import { type ISku, type ISpec, type EditableISpec, EnumShopGoodsStatus } from '~/types/goods'
 
 const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
@@ -175,7 +174,7 @@ const bfs = (products: ISpec[][] | null): ISpec[][] => {
 }
 
 /**
- * @description 将商品按next分组，方便后续更新可选状态
+ * @description 将商品按 ParentId 分组，方便后续更新可选状态
  */
 const groupByParentId = (items: ISpec[] | null): ISpec[][] | null => {
 	if (!items) return []
@@ -191,14 +190,13 @@ const groupByParentId = (items: ISpec[] | null): ISpec[][] | null => {
 	return Object.keys(groupedItems).length <= 0 ? null : Object.values(groupedItems)
 }
 
-function getRandomEnumValueByKey<T extends object>(enumObj: T): T[keyof T] {
-	const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)))
-	const randomKey = enumKeys[Math.floor(Math.random() * enumKeys.length)] as keyof T
-	return enumObj[randomKey]
-}
-
-const processSkuCombination = () => {
+const generateSkus = () => {
 	const groupedItems = groupByParentId(specs.value?.filter(spec => spec.parentId != null) ?? [])
+	function getRandomEnumValueByKey<T extends object>(enumObj: T): T[keyof T] {
+		const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)))
+		const randomKey = enumKeys[Math.floor(Math.random() * enumKeys.length)] as keyof T
+		return enumObj[randomKey]
+	}
 	const assemble = (specGroup: ISpec[], index: number) => {
 		return {
 			id: index,
@@ -221,20 +219,7 @@ const processSkuCombination = () => {
 	skus.value = bfs(groupedItems).map((specGroup, index) => assemble(specGroup, index))
 }
 
-const handleTabChange = (tab: TabPaneName) => {
-	switch (tab) {
-		case '1': processSkuCombination()
-			break
-		case '2': processSkuCombination()
-			break
-		case '3': processSkuCombination()
-			break
-		default:
-			break
-	}
-}
-
-const addDefaultSpecs = () => {
+const addDefaultSpecs = (): Promise<ISpec[]> => {
 	const labels: ISpec[] = [
 		{ id: 1, label: '品种', sort: 1 },
 		{ id: 2, label: '毛色', sort: 2 },
@@ -260,6 +245,10 @@ const addDefaultSpecs = () => {
 	let currentId = Math.max(...labels.map(l => l.id)) + 1
 	categories.forEach(category => category.items.forEach(item => labels.push({ id: currentId++, label: item, parentId: category.parentId, sort: 1 })))
 
-	specs.value = labels
+	return Promise.resolve(labels)
+}
+
+const generateDefaultSpecsAndSkus = () => {
+	addDefaultSpecs().then(labels => specs.value = labels).then(() => generateSkus())
 }
 </script>
