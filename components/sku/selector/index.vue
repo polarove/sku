@@ -7,7 +7,7 @@
 			:key="depth"
 		>
 			<h2 class="text-3xl color-red">
-				{{ parent.label }}{{ parent.id }}
+				{{ parent.label }}
 			</h2>
 			<div
 				v-for="(child, subIndex) in specs.filter(spec => spec.parentId === parent.id)"
@@ -59,11 +59,10 @@ const emits = defineEmits<{
 const selections = reactive<number[]>([])
 
 const labels = computed(() => props.specs?.filter(spec => spec.parentId == null))
+const options = computed(() => props.specs?.filter(spec => spec.parentId != null))
 
 declare type OptionId = number
 declare type Depth = number
-declare type LabelId = number
-declare type SpecId = number
 declare type NextDepth = number
 
 /**
@@ -72,14 +71,15 @@ declare type NextDepth = number
  * @param labelId 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param offset 元素在数组中的位置，即偏移量
  */
-const validateSelection = async (depth: Depth, labelId: LabelId, offset: SpecId | undefined): Promise<OptionId> => {
+const validateSelection = async (depth: Depth, label: ISpec | undefined, option: ISpecOption | undefined): Promise<OptionId> => {
 	const row = depth + 1
+	if (!label) return Promise.reject('没有可选项，无法选择')
+	if (!option) return Promise.reject('没有可选项，无法选择')
 	if (!props.specs) return Promise.reject('没有可选项，无法选择')
-	if (!props.specs.find(spec => spec.parentId != null)) return Promise.reject('可选项为空，无法选择')
+	if (!props.specs.some(spec => spec.parentId !== null)) return Promise.reject('可选项为空，无法选择')
+	const offset = props.specs.indexOf(option)
 	if (!offset) return Promise.reject(`无效的选择：第 ${offset} 个`)
-	const option = props.specs[offset]
-	if (!option) return Promise.reject(`选项不存在：第 ${row} 行第 ${offset} 个`)
-	if (option.parentId !== labelId) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
+	if (option.parentId !== label.id) return Promise.reject(`错误的选择：第 ${row} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
 	if (option.disabled) emits('on-mistake', option.hint)
 	return Promise.resolve(option.id)
@@ -163,10 +163,10 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
  * @description 选择包装器
  * @param depth 深度
  * @param labelId 你要在哪个label下进行选择，对该label下的选项进行验证
- * @param offset 元素在数组中的位置，即偏移量
+ * @param offset 选项在数组中的位置，即偏移量
  */
-const handleSelect = (depth: number, label: ISpec, option: ISpec) => {
-	validateSelection(depth, label.id, props.specs?.indexOf(option))
+const handleSelect = (depth: number, label: ISpec | undefined, option: ISpec | undefined) => {
+	validateSelection(depth, label, option)
 		.then(offset => select(depth, offset))
 		.then(depth => filterSkuCandidates(depth))
 		.then(({ candidates, nextDepth }) => mapOptionIdsAroundNextDepth(candidates, nextDepth))
@@ -175,10 +175,12 @@ const handleSelect = (depth: number, label: ISpec, option: ISpec) => {
 		.catch(err => emits('on-error', err))
 }
 
+handleSelect(0, labels.value?.shift(), options.value?.shift())
+
 const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
 const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
 const productPrice = computed(() => product.value ? `￥${product.value.price.toFixed(2)}` : '等待选择')
-const productStock = computed(() => product.value ? `${product.value.stock}件` : '等待选择')
+const productStock = computed(() => product.value ? `${product.value.stock.toFixed(0)} 件` : '等待选择')
 const productGeneralPrice = computed(() => product.value
 	? product.value.generalPrice
 		? `￥${product.value.generalPrice.toFixed(2)}`
