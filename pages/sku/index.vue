@@ -1,15 +1,19 @@
 <template>
 	<div class="flex">
-		<section class="w-50vw px-12">
-			<h1 class="text-center">
-				Sku 选择器
-			</h1>
-			<sku-selector
-				:specs="specs"
-				:skus="skus"
-				@on-mistake="(err?: string[]) => handleMistake(err)"
-				@on-error="(err?: string) => handleError(err)"
-			/>
+		<section class="w-50vw p-20px">
+			<el-tabs style="--el-font-size-base: 20px;">
+				<el-tab-pane label="sku 选择器">
+					<sku-selector
+						:specs="specs"
+						:skus="skus"
+						@on-mistake="(err?: string[]) => handleMistake(err)"
+						@on-error="(err?: string) => handleError(err)"
+					/>
+				</el-tab-pane>
+				<el-tab-pane label="代码">
+					<sku-code />
+				</el-tab-pane>
+			</el-tabs>
 		</section>
 		<el-card
 			class="w-50vw h-100vh"
@@ -17,7 +21,7 @@
 		>
 			<el-tabs
 				tab-position="top"
-				style="--el-font-size-base: 16px; --el-border-color-light: var(--bg-color)"
+				style="--el-font-size-base: 20px; --el-border-color-light: var(--bg-color)"
 			>
 				<el-tab-pane
 					label="编辑选项"
