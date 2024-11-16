@@ -19,7 +19,7 @@
 				]"
 				@click="handleSelect(depth, parent, child)"
 			>
-				{{ child.label }}{{ child.disabled }}
+				{{ child.label }}
 			</div>
 		</section>
 		<el-divider />
@@ -71,15 +71,24 @@ declare type NextDepth = number
  * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param option 元素在数组中的位置，即偏移量
  */
-const validateSelection = async (depth: Depth, label: ISpec | undefined, option: ISpecOption | undefined): Promise<{ depth: Depth, offset: OptionId }> => {
-	if (depth < 0) return Promise.reject('选择层数怎么可能是负数呢')
+const validateSelection = async (
+	depth: Depth,
+	specs: ISpec[] | null,
+	selections: number[],
+	label: ISpec | undefined,
+	option: ISpecOption | undefined
+): Promise<{ depth: Depth, offset: OptionId }> => {
+	let actualDepth = depth
+	if (depth === -1) actualDepth = depth + 2
+	if (depth >= 0) actualDepth = depth + 1
+	if (actualDepth < 0) return Promise.reject('选择层数怎么可能是负数呢')
 	if (!label) return Promise.reject('没有可选项，无法选择')
 	if (!option) return Promise.reject('没有可选项，无法选择')
-	if (!props.specs) return Promise.reject('没有可选项，无法选择')
-	if (!props.specs.some(spec => spec.parentId !== null)) return Promise.reject('可选项为空，无法选择')
-	const offset = props.specs.indexOf(option)
+	if (!specs) return Promise.reject('没有可选项，无法选择')
+	if (!specs.some(spec => spec.parentId !== null)) return Promise.reject('可选项为空，无法选择')
+	const offset = specs.indexOf(option)
 	if (!offset) return Promise.reject(`无效的选择：第 ${offset} 个`)
-	if (option.parentId !== label.id) return Promise.reject(`错误的选择：第 ${depth + 1} 行第 ${offset} 个`)
+	if (option.parentId !== label.id) return Promise.reject(`错误的选择：第 ${actualDepth + 1} 行第 ${offset} 个`)
 	if (depth > selections.length) return Promise.reject('请按顺序选择')
 	if (option.disabled) emits('on-mistake', option.hint)
 	return Promise.resolve({ depth, offset: option.id })
@@ -109,8 +118,10 @@ const select = async (depth: Depth, id: OptionId): Promise<number> => {
  * @param depth 深度
  */
 const filterSkuCandidates = async (depth: Depth) => {
-	depth = depth + 1
-	const candidates = props.skus?.filter(sku => selections.every((id, index) => sku.specIds.slice(0, depth)[index] === id))
+	let actualDepth = depth
+	if (depth === -1) actualDepth = depth + 2
+	if (depth >= 0) actualDepth = depth + 1
+	const candidates = depth === -1 ? props.skus : props.skus?.filter(sku => selections.every((id, index) => sku.specIds.slice(0, actualDepth)[index] === id))
 	if (candidates) return Promise.resolve({ candidates, depth })
 	return Promise.reject('没有找到对应的产品候选')
 }
@@ -118,9 +129,10 @@ const filterSkuCandidates = async (depth: Depth) => {
 /**
  * @description 获取optionIds下一层中，所有选项的id
  * @param candidates 产品候选
- * @param depth 深度，已经 + 1
+ * @param depth 深度
  */
 const mapOptionIdsAroundNextDepth = async (candidates: ISku[], depth: NextDepth) => {
+	depth = depth + 1
 	const optionIds = Array.from(new Set(candidates.map(sku => sku.specIds[depth]).filter(id => id !== undefined)))
 	return Promise.resolve({ candidates, optionIds, depth })
 }
@@ -134,7 +146,7 @@ const mapOptionIdsAroundNextDepth = async (candidates: ISku[], depth: NextDepth)
  * @param depth 深度，已经 + 1
  * @returns skuUnderTheSelection
  */
-const mapSkusAroundNextDepth = async (optionIds: OptionId[], candidates: ISku[], depth: NextDepth) => {
+const mapSkusAroundNextDepth = async (candidates: ISku[], optionIds: OptionId[], depth: NextDepth) => {
 	const assemble = (option: OptionId) => ({
 		option: props.specs?.find(spec => spec.id === option),
 		skus: candidates.filter(sku => sku.specIds[depth] === option)
@@ -166,12 +178,12 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
  * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param option 点击的选项
  */
-const handleSelect = (initialDepth: number, label: ISpec | undefined, option: ISpec | undefined) => {
-	validateSelection(initialDepth, label, option)
+const handleSelect = async (initialDepth: number, label: ISpec | undefined, option: ISpec | undefined) => {
+	validateSelection(initialDepth, props.specs, selections, label, option)
 		.then(({ depth, offset }) => select(depth, offset))
 		.then(depth => filterSkuCandidates(depth))
 		.then(({ candidates, depth }) => mapOptionIdsAroundNextDepth(candidates, depth))
-		.then(({ candidates, optionIds, depth }) => mapSkusAroundNextDepth(optionIds, candidates, depth))
+		.then(({ candidates, optionIds, depth }) => mapSkusAroundNextDepth(candidates, optionIds, depth))
 		.then(skuUnderTheSelection => skuUnderTheSelection.forEach(validate))
 		.catch(err => emits('on-error', err))
 }
@@ -186,6 +198,25 @@ const productGeneralPrice = computed(() => product.value
 		: `￥${product.value.price.toFixed(2)}`
 	: '等待选择')
 
-const initialSelect = () => handleSelect(0, labels.value?.[0], options.value?.[0])
+const initialSelect = async () => {
+	const secure = async (labels: ISpecOption[] | undefined, options: ISpecOption[] | undefined) => {
+		if (!labels) return Promise.reject('[initialSelect]：可选项为空 | label')
+		if (!options) return Promise.reject('[initialSelect]：可选项为空 | options')
+		const label = labels[0]
+		const option = options[0]
+		return Promise.resolve({ label, option, length: labels.length })
+	}
+
+	const prepare = async (label: ISpecOption, option: ISpecOption, length: number) => {
+		const defaults = [handleSelect(-1, label, option)]
+		if (length > 1) {
+			const actions = [handleSelect(0, label, option), handleSelect(0, label, option)]
+			defaults.push(...actions)
+		}
+		return Promise.all(defaults)
+	}
+
+	secure(labels.value, options.value).then(({ label, option, length }) => prepare(label, option, length)).catch(err => ElMessage.error(err))
+}
 onMounted(initialSelect)
 </script>
