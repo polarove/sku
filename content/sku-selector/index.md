@@ -56,6 +56,7 @@ const props = defineProps<{ specs: ISpecOption[] | null, skus: ISku[] | null }>(
 const emits = defineEmits<{
 	(e: 'on-mistake', err: string[] | undefined): void
 	(e: 'on-error', err: string): void
+	(e: 'on-success', product: ISku | undefined): void
 }>()
 const selections = reactive<number[]>([])
 
@@ -226,5 +227,7 @@ const productGeneralPrice = computed(() => product.value
 		? `￥${product.value.generalPrice.toFixed(2)}`
 		: `￥${product.value.price.toFixed(2)}`
 	: '等待选择')
+
+watch(() => product.value, val => emits('on-success', val))
 </script>
 ```
