@@ -227,5 +227,4 @@ const productGeneralPrice = computed(() => product.value
 		: `￥${product.value.price.toFixed(2)}`
 	: '等待选择')
 </script>
-
 ```
