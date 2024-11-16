@@ -192,16 +192,9 @@ const handleSelect = async (initialDepth: number, label: ISpec | undefined, opti
 		.catch(err => emits('on-error', err))
 }
 
-const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
-const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
-const productPrice = computed(() => product.value ? `￥${product.value.price.toFixed(2)}` : '等待选择')
-const productStock = computed(() => product.value ? `${product.value.stock.toFixed(0)} 件` : '等待选择')
-const productGeneralPrice = computed(() => product.value
-	? product.value.generalPrice
-		? `￥${product.value.generalPrice.toFixed(2)}`
-		: `￥${product.value.price.toFixed(2)}`
-	: '等待选择')
-
+/**
+ * @description 处理加载完毕后的首次自动选择
+ */
 const initialSelect = async () => {
 	const secure = async (labels: ISpecOption[] | undefined, options: ISpecOption[] | undefined) => {
 		if (!labels) return Promise.reject('[initialSelect]：可选项为空 | label')
@@ -223,4 +216,13 @@ const initialSelect = async () => {
 	secure(labels.value, options.value).then(({ label, option, length }) => prepare(label, option, length)).catch(err => ElMessage.error(err))
 }
 onMounted(initialSelect)
+const product = computed(() => props.skus?.find(sku => sku.specIds.every((id, index) => selections[index] === id)))
+const productName = computed(() => product.value ? product.value.labels.join(' - ') : '等待选择')
+const productPrice = computed(() => product.value ? `￥${product.value.price.toFixed(2)}` : '等待选择')
+const productStock = computed(() => product.value ? `${product.value.stock.toFixed(0)} 件` : '等待选择')
+const productGeneralPrice = computed(() => product.value
+	? product.value.generalPrice
+		? `￥${product.value.generalPrice.toFixed(2)}`
+		: `￥${product.value.price.toFixed(2)}`
+	: '等待选择')
 </script>
