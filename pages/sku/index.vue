@@ -75,6 +75,33 @@
 import type { TabPaneName } from 'element-plus'
 import { type ISku, type ISpec, type EditableISpec, EnumShopGoodsStatus } from '~/types/goods'
 
+useHead({
+	htmlAttrs: {
+		lang: 'zh-CN'
+	},
+	link: [
+		{
+			rel: 'icon',
+			type: 'image/png',
+			href: '/favicon.png'
+		}
+	]
+})
+
+useSeoMeta({
+	title: 'sku selector | Polarove',
+	author: 'Polarove aka 刘棋',
+	description: 'A interactive demo of sku selector',
+	ogTitle: 'sku selector | Polarove',
+	ogDescription: 'A interactive demo of sku selector',
+	ogImage: 'https://avatars.githubusercontent.com/u/95893742?v=4',
+	ogUrl: 'https://polarove.github.io/polar/sku',
+	twitterTitle: 'sku selector | Polarove',
+	twitterDescription: 'A interactive demo of sku selector',
+	twitterImage: 'https://avatars.githubusercontent.com/u/95893742?v=4',
+	twitterCard: 'summary'
+})
+
 const skuReviewState = reactive<{ data: ISku | null, visible: boolean }>({
 	data: null,
 	visible: false
@@ -100,7 +127,6 @@ const handleAddSpec = async (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 }
 
 const handleAddLabel = () => {
-	console.log('add label')
 	const name = '标签名'
 	const buildPrompt = (name: string) => {
 		return {
