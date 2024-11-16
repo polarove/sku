@@ -123,7 +123,7 @@ const handleAddSpec = async (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 		specs.value?.push(spec)
 		return Promise.resolve(spec.label)
 	}
-	return calculateId().then(assemble).then(addSpec).then(label => label)
+	return calculateId().then(assemble).then(addSpec).then(label => label).then(generateSkus)
 }
 
 const handleAddLabel = () => {
@@ -146,7 +146,6 @@ const handleAddLabel = () => {
 
 const handleRemoveLabel = (label: ISpec) => {
 	const removeLabel = async (target: ISpec) => {
-		console.log('remove label')
 		const temp = specs.value?.filter(spec => spec !== target && spec.parentId !== target.id)
 		return Promise.resolve(temp)
 	}
