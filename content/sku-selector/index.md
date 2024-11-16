@@ -179,7 +179,7 @@ const validate = async (target: { option: ISpec | undefined, skus: ISku[] }) => 
 
 /**
  * @description 选择包装器
- * @param depth 深度
+ * @param initialDepth 初始深度
  * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
  * @param option 点击的选项
  */
@@ -227,4 +227,5 @@ const productGeneralPrice = computed(() => product.value
 		: `￥${product.value.price.toFixed(2)}`
 	: '等待选择')
 </script>
+
 ```
