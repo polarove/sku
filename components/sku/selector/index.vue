@@ -68,8 +68,10 @@ declare type NextDepth = number
 /**
  * @description 对选择进行验证
  * @param depth 深度
- * @param label 你要在哪个label下进行选择，对该label下的选项进行验证
- * @param option 元素在数组中的位置，即偏移量
+ * @param specs 选项
+ * @param selections 已选项
+ * @param label 选项所在的标签
+ * @param option 所选项
  */
 const validateSelection = async (
 	depth: Depth,
