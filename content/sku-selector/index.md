@@ -124,7 +124,9 @@ const filterSkuCandidates = async (depth: Depth) => {
 	let actualDepth = depth
 	if (depth === -1) actualDepth = depth + 2
 	if (depth >= 0) actualDepth = depth + 1
-	const candidates = depth === -1 ? props.skus : props.skus?.filter(sku => selections.every((id, index) => sku.specIds.slice(0, actualDepth)[index] === id))
+	const candidates = depth === -1
+		? props.skus
+		: props.skus?.filter(sku => selections.every((id, index) => sku.specIds.slice(0, actualDepth)[index] === id))
 	if (candidates) return Promise.resolve({ candidates, depth })
 	return Promise.reject('没有找到对应的产品候选')
 }
