@@ -126,6 +126,37 @@ const handleAddSpec = async (tag: Pick<ISpec, 'label' | 'parentId'>) => {
 	return calculateId().then(assemble).then(addSpec).then(label => label).then(generateSkus)
 }
 
+const handleRemoveSpecs = async (spec: ISpec) => {
+	const removeSpecs = async (target: ISpec) => {
+		specs.value?.splice(specs.value.indexOf(target), 1)
+		if (!target.parentId) return Promise.reject(`无法删除该选项，因为它不属于任何 Label：${target.label} => parentId为空`)
+		return Promise.resolve(target.parentId)
+	}
+
+	const shouldRemoveLabel = (parentId: number) => {
+		const ally = specs.value?.filter(spec => spec.parentId === parentId)
+		const label = specs.value?.find(spec => spec.id === parentId)
+		if (ally && ally.length <= 0 && label) return Promise.resolve(label)
+		return Promise.resolve(undefined)
+	}
+
+	const tryToRemoveLabel = (label: ISpec | undefined): Promise<string | null> => {
+		if (!specs.value) return Promise.reject('[tryToRemoveLabel]：可选项为空，无法执行删除操作')
+		if (label) {
+			specs.value.splice(specs.value.indexOf(label), 1)
+			return Promise.resolve(`[tryToRemoveLabel]：由于该Label下已无子选项，移除Label | ${label.label}`)
+		}
+		return Promise.resolve(null)
+	}
+
+	removeSpecs(spec)
+		.then(shouldRemoveLabel)
+		.then(tryToRemoveLabel)
+		.then(msg => msg && ElMessage.success(msg))
+		.then(generateSkus)
+		.catch(err => ElMessage.warning(err))
+}
+
 const handleAddLabel = () => {
 	const name = '标签名'
 	const buildPrompt = (name: string) => {
@@ -156,36 +187,6 @@ const handleRemoveLabel = (label: ISpec) => {
 	}
 
 	removeLabel(label).then(assign).then(generateSkus)
-}
-
-const handleRemoveSpecs = async (spec: ISpec) => {
-	const removeSpecs = async (target: ISpec) => {
-		specs.value?.splice(specs.value.indexOf(target), 1)
-		if (!target.parentId) return Promise.reject(`无法删除该选项，因为它不属于任何 Label：${target.label} => parentId为空`)
-		return Promise.resolve(target.parentId)
-	}
-
-	const shouldRemoveLabel = (parentId: number) => {
-		const ally = specs.value?.filter(spec => spec.parentId === parentId)
-		const label = specs.value?.find(spec => spec.id === parentId)
-		if (ally && ally.length <= 0 && label) return Promise.resolve(label)
-		return Promise.resolve(undefined)
-	}
-
-	const tryToRemoveLabel = (label: ISpec | undefined): Promise<string | null> => {
-		if (!specs.value) return Promise.reject('[tryToRemoveLabel]：可选项为空，无法执行删除操作')
-		if (label) {
-			specs.value.splice(specs.value.indexOf(label), 1)
-			return Promise.resolve(`[tryToRemoveLabel]：由于该Label下已无子选项，移除Label | ${label.label}`)
-		}
-		return Promise.resolve(null)
-	}
-
-	removeSpecs(spec)
-		.then(shouldRemoveLabel)
-		.then(tryToRemoveLabel)
-		.then(msg => msg && ElMessage.success(msg))
-		.catch(err => ElMessage.warning(err))
 }
 
 const reviewSku = (sku: ISku) => {
