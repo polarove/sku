@@ -8,7 +8,17 @@
 						:skus="skus"
 						@on-mistake="(err?: string[]) => handleMistake(err)"
 						@on-error="(err?: string) => handleError(err)"
+						@on-success="(sku: ISku | undefined) => handleSuccess(sku)"
 					/>
+					<el-button
+						v-if="productState.sku"
+						size="large"
+						style="height: 48px;"
+						class="w-100%"
+						@click="toggleProductDetails()"
+					>
+						查看详情
+					</el-button>
 				</el-tab-pane>
 				<el-tab-pane label="代码">
 					<sku-code />
@@ -67,6 +77,21 @@
 				{{ skuReviewState.data?.title }}
 			</template>
 			<div>{{ skuReviewState.data }}</div>
+		</el-dialog>
+
+		<el-dialog v-model="productState.visible">
+			<template #header>
+				<h1 class="text-2xl">
+					{{ productState.sku?.title }} | {{ productState.sku?.labels.join(' - ') }}
+				</h1>
+			</template>
+			<p
+				v-for="(key, index) of Object.keys(productState.sku!)"
+				:key="index"
+			>
+				<span class="block text-2xl color-red">{{ key }}</span>
+				<span class="block text-2xl">{{ Object.values(productState.sku!)[index] }}</span>
+			</p>
 		</el-dialog>
 	</div>
 </template>
@@ -362,6 +387,17 @@ const handleMistake = (err?: string[]) => {
 
 const handleError = (err?: string) => {
 	ElMessage.warning(err ?? '错误的选择')
+}
+
+const productState = reactive<{ sku: ISku | undefined, visible: boolean }>({
+	sku: undefined,
+	visible: false
+})
+const handleSuccess = (sku: ISku | undefined) => {
+	productState.sku = sku
+}
+const toggleProductDetails = () => {
+	productState.visible = !productState.visible
 }
 
 const handleTabChange = (tab: TabPaneName) => {
